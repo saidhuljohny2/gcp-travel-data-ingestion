@@ -1,0 +1,4 @@
+{
+  "bucket": "YOUR_BUCKET_NAME",
+  "file": "incoming/employee_travel.csv"
+}
