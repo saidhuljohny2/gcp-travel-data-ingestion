@@ -43,3 +43,17 @@ def read_csv_from_gcs(
     if frame.empty:
         raise EmptyFileError()
     return frame
+
+# for manual testing
+# logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+# logger = logging.getLogger("gcs_reader_demo")
+# client = storage.Client()
+
+# frame = read_csv_from_gcs(
+#     "travel-incoming-gcp-evening-batch-501811",
+#     "incoming/employee_travel_20260907.csv",
+#     client,
+#     logger,
+# )
+# print(frame)
+# print(len(frame))
