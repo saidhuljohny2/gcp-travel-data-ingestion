@@ -52,12 +52,15 @@ sequenceDiagram
 
 ## Data flow: GCS → Cloud Run → BigQuery
 
-A client sends `{ "bucket", "file" }`. The API downloads the object, validates, transforms, then writes four BigQuery surfaces: staging (append), final (`MERGE`), rejected (append), audit (streaming insert).
+A client sends `{ "bucket", "file" }` to `POST /load`, **or** Eventarc calls `POST /events` when an `incoming/*.csv` object is finalized. Both paths run the same pipeline: download, validate, transform, then four BigQuery surfaces: staging (append), final (`MERGE`), rejected (append), audit (streaming insert).
 
 ```mermaid
 flowchart TB
   Client["Client curl.exe"] -->|POST /load JSON| API["Cloud Run Flask API"]
-  GCS["GCS bucket<br/>incoming/employee_travel.csv"] -->|download_as_bytes| API
+  Drop["Upload incoming/*.csv"] --> GCS
+  GCS -->|object finalized| EA["Eventarc"]
+  EA -->|POST /events CloudEvent| API
+  GCS["GCS bucket<br/>incoming/employee_travel_YYYYMMDD.csv"] -->|download_as_bytes| API
   API -->|valid rows WRITE_APPEND| ST["travel_analytics.travel_staging"]
   API -->|MERGE on booking_id<br/>WHERE execution_id| FIN["travel_analytics.employee_travel"]
   ST --> FIN
@@ -73,6 +76,7 @@ sequenceDiagram
   participant API as Cloud Run
   participant GCS as Cloud Storage
   participant BQ as BigQuery
+  Note over C,API: Manual: POST /load. Automated: Eventarc POST /events.
   C->>API: POST /load {bucket, file}
   API->>API: execution_id = UUID
   API->>GCS: download object
@@ -102,10 +106,11 @@ sequenceDiagram
 | **`src/bigquery_loader.py`** | Staging load job, parameterized `MERGE`, rejected load job, parameterized audit `SELECT`. |
 | **`src/audit.py`** | One `AuditRecord` per execution via `insert_rows_json`. |
 | **`src/config.py`** | Frozen dataclass from env: `GCP_PROJECT_ID` / `GOOGLE_CLOUD_PROJECT`, dataset, location, table names, port, log level, audit limit. |
-| **`app.py`** | Health (no GCP), `/load` orchestration, `/audit` query, JSON error envelope. |
+| **`app.py`** | Health (no GCP), `/load` (manual JSON), `/events` (Eventarc CloudEvent), `/audit`, JSON error envelope. |
+| **Eventarc** | GCS object-finalized → `POST /events`. Does not list the bucket; one event per new/overwritten object. |
 | **BigQuery** | `travel_staging` (partition `DATE(processed_at)`, cluster `execution_id, booking_id`, 30-day partition expiry), `employee_travel` (partition `travel_date`, cluster `department, booking_status, booking_id`), `travel_rejected`, `pipeline_audit`. |
 | **Cloud Logging** | Receives stdout; each `/load` logger is bound to `execution_id`. |
-| **IAM** | Runtime SA: Storage Object Viewer, BigQuery Data Editor, BigQuery Job User. Deployer user: APIs, AR push, Cloud Run Admin, SA user, etc. |
+| **IAM** | Runtime SA: Storage Object Viewer, BigQuery Data Editor, BigQuery Job User. Eventarc SA: Eventarc Event Receiver + Cloud Run Invoker. GCS project SA: Pub/Sub Publisher. |
 
 ---
 
@@ -133,7 +138,7 @@ Mixed-case cities, padded names, and `usd` / `confirmed` are **valid**; transfor
 
 Idempotency is **at the booking grain**, not “exactly-once HTTP”.
 
-- Each `POST /load` is a new `execution_id`. Staging always **appends**.
+- Each `POST /load` or accepted `POST /events` is a new `execution_id`. Staging always **appends**.
 - `MERGE` uses only `WHERE execution_id = @execution_id`, so a replay does not re-merge older staging batches.
 - `ON T.booking_id = S.booking_id` updates all non-key columns including lineage.
 - `ROW_NUMBER() OVER (PARTITION BY booking_id ORDER BY processed_at DESC)` makes the USING clause unique on `booking_id` (BigQuery `MERGE` requires a unique key in source).
@@ -184,4 +189,4 @@ Partial BigQuery work: staging load can succeed and MERGE fail; the FAILED audit
 - Consider CMEK, VPC-SC, and CMEK-covered buckets/datasets in regulated environments.
 - Do not log full CSV rows (current logs are counts and operational messages).
 
-For Console/CLI steps, IAM rationale, and verification, see [deployment-guide.md](deployment-guide.md).
+For Console/CLI steps, IAM rationale, and verification, see [deployment-guide.md](deployment-guide.md). For GCS → API automation, see [eventarc.md](eventarc.md).

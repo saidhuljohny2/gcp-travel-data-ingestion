@@ -11,7 +11,7 @@ Each lesson has:
 - **Check** — proof it worked
 - **Ask** — one question to lock the concept
 
-Related: [../README.md](../README.md), [architecture.md](architecture.md), [codebase-guide.md](codebase-guide.md), [deployment-guide.md](deployment-guide.md), [ci-cd.md](ci-cd.md).
+Related: [../README.md](../README.md), [architecture.md](architecture.md), [codebase-guide.md](codebase-guide.md), [deployment-guide.md](deployment-guide.md), [ci-cd.md](ci-cd.md), [eventarc.md](eventarc.md).
 
 > **Placeholders (student labs)**
 > - `YOUR_PROJECT_ID` — student GCP project
@@ -33,11 +33,14 @@ Use this when you are teaching from the verified project instead of building fro
 | GitHub | https://github.com/saidhuljohny2/gcp-travel-data-ingestion |
 | Cloud Run | https://travel-ingestion-api-l4mjv2qmxq-uc.a.run.app |
 | Bucket | `travel-incoming-gcp-evening-batch-501811` |
-| Incoming objects | `employee_travel_20260907.csv`, `_20260908.csv`, `_20260909.csv` |
+| Incoming objects | `_20260907.csv`, `_20260908.csv`, `_20260909.csv`, **`_20260910.csv`** (Eventarc) |
 | Dataset | `travel_analytics` |
 | Runtime SA | `travel-ingestion-sa@gcp-evening-batch-501811.iam.gserviceaccount.com` |
+| Eventarc SA | `travel-eventarc-sa@gcp-evening-batch-501811.iam.gserviceaccount.com` |
+| Eventarc trigger | `travel-gcs-incoming` in location **`us`** (bucket is US multi-region) → Cloud Run path `/events` |
 | Image repo | `us-central1-docker.pkg.dev/gcp-evening-batch-501811/travel-platform/travel-ingestion-api` |
 | Verified `/load` (day 20260907) | 300 read, **286 loaded**, **14 rejected** |
+| Verified Eventarc (day 20260910) | Upload only — **300 / 286 / 14**, no curl |
 
 **Live trigger (Cloud Shell):**
 
@@ -57,6 +60,8 @@ gcloud builds submit --config cloudbuild.yaml \
   --substitutions=_IMAGE_TAG=$(git rev-parse --short HEAD)
 ```
 
+**Live Eventarc proof (no curl):** upload `incoming/employee_travel_20260910.csv`. Instructor capture: image `96072fa`, two SUCCESS audits (Eventarc at-least-once) then MERGE kept facts unique.
+
 ---
 
 ## Before class — instructor prep (do NOT do live)
@@ -74,8 +79,9 @@ Cloud Build container builds take **3–8 minutes**. Pre-warm so class does not 
   6. **Artifact Registry**
   7. **Cloud Build → History / Triggers**
   8. **Logging → Logs Explorer**
+  9. **Eventarc → Triggers** (Lesson 13f)
 
-**One-time truth to teach:** six Console areas — **Storage, BigQuery, IAM, Cloud Run, Artifact Registry, Cloud Build**. Draw those boxes first. Logging is how you prove a run.
+**One-time truth to teach:** seven Console areas — **Storage, BigQuery, IAM, Cloud Run, Artifact Registry, Cloud Build, Eventarc**. Draw those boxes first. Logging is how you prove a run.
 
 ---
 
@@ -97,9 +103,10 @@ Cloud Build container builds take **3–8 minutes**. Pre-warm so class does not 
 | 11 | Logs + audit | Logs Explorer | 15 min |
 | 12 | Break it on purpose | Cloud Shell | 10 min |
 | 13 | Automate deployment (CI/CD) | Cloud Build | 25 min |
+| 13f | Automate loads (Eventarc) | Eventarc + Storage | 20 min |
 | 14 | Interview recap + cleanup | all areas | 20 min |
 
-Total ≈ 4–4.5 hours. 90-minute path is at the end.
+Total ≈ 4.5–5 hours. 90-minute path is at the end.
 
 ---
 
@@ -138,7 +145,7 @@ Total ≈ 4–4.5 hours. 90-minute path is at the end.
 - A company drops a **daily** CSV into Cloud Storage `incoming/`.
 - File names are dated: `employee_travel_YYYYMMDD.csv` — one object per business day.
 - Analysts need **clean** bookings in BigQuery, not raw garbage.
-- Engineering exposes a REST API on **Cloud Run** so anything can trigger a load.
+- Engineering exposes a REST API on **Cloud Run** so a human (`/load`) or Eventarc (`/events`) can trigger a load.
 - Re-running the **same day's** file must **not** duplicate `booking_id`.
 - Loading **day 2** after day 1 **should** add new bookings (different IDs).
 
@@ -146,7 +153,8 @@ Total ≈ 4–4.5 hours. 90-minute path is at the end.
 
 ```text
 Deploy:  Git → Docker → Artifact Registry → Cloud Run
-Data:    GCS incoming/employee_travel_YYYYMMDD.csv → Cloud Run → BigQuery
+Data:    GCS incoming/*.csv → (Eventarc) → Cloud Run /events → BigQuery
+          or curl POST /load {bucket, file}
 ```
 
 **Say the four tables:**
@@ -176,6 +184,8 @@ Data:    GCS incoming/employee_travel_YYYYMMDD.csv → Cloud Run → BigQuery
 - Location type: **Multi-region**, `US` (match BigQuery `US`)
 - Leave **Uniform** access control
 - **Create**. Keep public access prevention **on**.
+
+**Say.** Write the location down. Lesson 13f Eventarc trigger region must **match the bucket**: this **US** multi-region bucket → trigger location **`us`**, not `us-central1`. Cloud Run can stay in `us-central1`.
 
 **Point at.** Uniform access — "IAM decides who reads, not per-object ACLs."
 
@@ -305,6 +315,8 @@ Booking ID ranges are **different per day**, so loading all three days accumulat
 
 **Ask.** Why both Data Editor *and* Job User?  
 *Answer: Data Editor changes table data; Job User launches the job that does it.*
+
+**Say.** This SA **downloads and writes data**. Lesson 13f adds a **second** SA (`travel-eventarc-sa`) that only **invokes Cloud Run**. Do not put BigQuery roles on the Eventarc SA.
 
 > Screenshot: `images/screenshots/iam-sa.png`
 
@@ -664,6 +676,139 @@ git push origin main
 
 ---
 
+## Lesson 13f — Automate loads: upload CSV → Eventarc → `/events` (Console)
+
+**Say.** Lesson 13 automated *deploys*. This lesson automates *data*. CI/CD does **not** pick files. GCS does **not** scan `incoming/`. Production drop automation is:
+
+```text
+CSV lands in incoming/  →  object finalized  →  Eventarc  →  POST /events  →  same pipeline as /load
+```
+
+Files already sitting in the folder stay idle. A **new** upload (or a curl `/load`) is what starts a run.
+
+**Say.** `/load` stays for demos and replays. Eventarc is the hands-off path. IAM appendix: [eventarc.md](eventarc.md).
+
+**Say.** The live revision must include `POST /events`. Redeploy first if you just pulled this code. Instructor is already on image **`96072fa`**.
+
+### Enable Eventarc APIs
+
+**Click.** ☰ → **APIs & Services → + Enable** (search each): Eventarc API, Eventarc Publishing API, Cloud Pub/Sub API.
+
+**Check.** All three enabled. Lesson 0's six APIs stay as they were.
+
+### Eventarc service account (invoke only — still no JSON key)
+
+**Say.** Two robots: `travel-ingestion-sa` **reads the CSV and writes BigQuery**. `travel-eventarc-sa` only **POSTs to Cloud Run**. Never download a key for either.
+
+**Click.** **IAM & Admin → Service Accounts → + Create** → ID `travel-eventarc-sa` → **Create and continue** → skip extra roles → **Done**. **Skip Keys.**
+
+**Click.** ☰ → **IAM & Admin → IAM → Grant access** → `travel-eventarc-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com` → role **Eventarc Event Receiver**.
+
+**Click.** ☰ → **Cloud Run → travel-ingestion-api → Permissions → Add principal** → same SA → **Cloud Run Invoker**.
+
+**Click.** ☰ → **Cloud Storage** → open `YOUR_BUCKET` → **Permissions → Grant access** → same SA → **Storage Legacy Bucket Reader**.
+
+**Say.** Object Viewer is **not** enough to *create* the trigger. Eventarc calls `storage.buckets.get`. Instructor failure before this grant: `PERMISSION_DENIED: storage.buckets.get`.
+
+**Type** in Cloud Shell (GCS publishes to Eventarc's topic; grant the Eventarc service agent too):
+
+```bash
+PROJECT_ID=$(gcloud config get-value project)
+PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --member="serviceAccount:service-${PROJECT_NUMBER}@gs-project-accounts.iam.gserviceaccount.com" \
+  --role="roles/pubsub.publisher"
+
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-eventarc.iam.gserviceaccount.com" \
+  --role="roles/eventarc.serviceAgent"
+```
+
+**Say.** Wait about one minute after IAM. Creating the trigger immediately often 403s.
+
+### Create the trigger
+
+**Click.** ☰ → **Eventarc → Triggers → Create trigger**.
+
+**Type.**
+
+| Field | Student lab | Instructor demo |
+| --- | --- | --- |
+| Name | `travel-gcs-incoming` | `travel-gcs-incoming` |
+| Event provider | Cloud Storage | same |
+| Event | object finalized (`google.cloud.storage.object.v1.finalized`) | same |
+| Bucket | `YOUR_BUCKET` | `travel-incoming-gcp-evening-batch-501811` |
+| Resource path / `name=` filter | **Leave blank** | **Leave blank** |
+| Destination | Cloud Run `travel-ingestion-api` | same |
+| Path | `/events` | `/events` |
+| Region / location | **Same as the bucket** | **`us`** (not `us-central1`) |
+| Service account | `travel-eventarc-sa` | `travel-eventarc-sa@gcp-evening-batch-501811.iam.gserviceaccount.com` |
+
+**Say — do not set path `incoming/*.csv`.** On this event type it fails: `attribute name not found within event type`. Filtering is in `src/gcs_event.py`: only `incoming/*.csv` runs the pipeline; anything else returns **204**.
+
+**Say — location is the #1 class bug.** Lesson 2 used **US multi-region**. Trigger location is **`us`**. Cloud Run stays **`us-central1`**. A `us-central1` Eventarc trigger will not see this bucket.
+
+**Check.** Trigger **Active**. Instructor: destination `/events`, topic `eventarc-us-travel-gcs-incoming-417`. Google can take **up to 2 minutes** before the trigger is live — do not upload in the first 30 seconds.
+
+### Prove it (upload, do not curl)
+
+**Do.** New day so MERGE is visibly additive (days 7–9 may already be loaded):
+
+```bash
+python scripts/generate_sample_data.py --dates 20260910 --rows 300
+```
+
+**Click.** Bucket → `incoming/` → **Upload** `employee_travel_20260910.csv`. Do **not** call `/load`.
+
+**Wait** 15–60 seconds.
+
+**Click.** **Cloud Run → travel-ingestion-api → Logs**. Filter `Eventarc` or `20260910`.
+
+**Point at.**
+
+1. `Eventarc object finalized: gs://…/incoming/employee_travel_20260910.csv`
+2. `File received: gs://…` with a new `execution_id`
+
+**Click.** BigQuery Studio:
+
+```sql
+SELECT file_name, status, records_read, records_loaded, records_rejected, start_time
+FROM `YOUR_PROJECT_ID.travel_analytics.pipeline_audit`
+WHERE file_name LIKE '%20260910%'
+ORDER BY start_time DESC;
+```
+
+**Check.** `SUCCESS`, **300 / 286 / 14**. Instructor live capture (2026-09-09 UTC):
+
+| start_time (UTC) | execution_id (prefix) | counts |
+| --- | --- | --- |
+| 12:07:45 | `f57398dc-…` | 300 / 286 / 14 |
+| 12:08:04 | `6580b0e4-…` | 300 / 286 / 14 |
+
+**Say.** Eventarc is **at-least-once**. A new trigger (or `gcloud storage cp`) can finalize twice → **two audit rows**. That is not a pandas bug. **`employee_travel` does not double** — MERGE on `booking_id`. Audit and rejected tables **append on purpose**.
+
+**Ask.** Why not list every object in `incoming/` on a timer?  
+*Answer: Each upload is one event. No folder scan. Files already in the folder are not loaded until uploaded again or you curl `/load`.*
+
+**Ask.** What if someone uploads `notes.txt` or a CSV at the bucket root?  
+*Answer: `/events` returns 204. No audit row. Eventarc does not retry a 204.*
+
+**Ask.** Two SAs — which one needs BigQuery?  
+*Answer: Only `travel-ingestion-sa`. Eventarc SA needs Event Receiver + Run Invoker + Legacy Bucket Reader.*
+
+CLI (instructor **must** set `TRIGGER_LOCATION=us` because the bucket is US multi-region):
+
+```bash
+export BUCKET=travel-incoming-gcp-evening-batch-501811
+export TRIGGER_LOCATION=us
+bash scripts/setup_eventarc.sh
+```
+
+Students with a **us-central1 regional** bucket omit `TRIGGER_LOCATION` (script defaults to `us-central1`).
+
+---
+
 ## Lesson 14 — Interview recap and cleanup
 
 **Interview drill.** Use the 15 Q&A in [../README.md](../README.md#interview-questions-15), plus:
@@ -676,11 +821,16 @@ git push origin main
 6. `--allow-unauthenticated` vs identity token  
 7. Cloud Build vs manual `--source`  
 8. Why `_IMAGE_TAG=$SHORT_SHA`
+9. Eventarc vs curl `/load` (event vs RPC)  
+10. Why Eventarc location is `us` when Cloud Run is `us-central1`  
+11. Why two SUCCESS audits can be OK (at-least-once + MERGE)
 
 ### Cleanup (Console)
 
 | Delete | Where |
 | --- | --- |
+| Eventarc trigger | Eventarc → Triggers → **Delete** `travel-gcs-incoming` |
+| Eventarc SA | IAM → Service Accounts → **Delete** `travel-eventarc-sa` |
 | Cloud Run service | Cloud Run → **Delete** |
 | BigQuery dataset | BigQuery → dataset ⋮ → **Delete dataset** |
 | Bucket | Cloud Storage → bucket ⋮ → **Delete** |
@@ -688,7 +838,7 @@ git push origin main
 | Cloud Build trigger | Cloud Build → Triggers → **Delete** |
 | Artifact Registry | `travel-platform` and/or `cloud-run-source-deploy` → **Delete** |
 
-**Say.** Dataset + bucket stop storage cost; Cloud Run stops request cost; leftover Artifact Registry images still bill a little.
+**Say.** Dataset + bucket stop storage cost; Cloud Run stops request cost; leftover Artifact Registry images still bill a little. Delete the Eventarc trigger **before** the bucket or students see a dangling trigger.
 
 ---
 
@@ -700,6 +850,7 @@ Still inside the Console panel:
 2. First deploy: `gcloud run deploy --source .`
 3. Automated deploy: `gcloud builds submit --config cloudbuild.yaml …`
 4. GitHub trigger **must** be created in the Triggers UI after connecting the GitHub App.
+5. Eventarc: IAM grants in Console; trigger create often needs Cloud Shell. **Location = bucket location (`us` for US multi-region).** Do not set a Storage path pattern for object-finalized.
 
 Everything else (APIs, bucket, tables, IAM, health in browser, BigQuery queries, logs, cleanup) is point-and-click.
 
@@ -715,17 +866,18 @@ Everything else (APIs, bucket, tables, IAM, health in browser, BigQuery queries,
 6. Deploy `--source` (20)  
 7. Health + `/load` of `_20260907.csv` (10)  
 8. COUNT = 286, duplicates = 0 (5)  
-9. Show Cloud Build History of a prior SUCCESS **or** run `gcloud builds submit` if time (10)
+9. Show Cloud Build History of a prior SUCCESS **or** run `gcloud builds submit` if time (10)  
+10. Optional 5 min: Eventarc Triggers page + `pipeline_audit` row for `_20260910.csv`
 
-Skip: break-it, GitHub App trigger, WIF.
+Skip if short on time: break-it, GitHub App trigger, WIF. Do **not** skip explaining that GCS does not auto-scan `incoming/` unless Eventarc is shown.
 
 ---
 
 ## Instructor checklist (print)
 
 - [ ] Project selected, billing on  
-- [ ] 6 APIs enabled  
-- [ ] Bucket has three `incoming/employee_travel_YYYYMMDD.csv` objects  
+- [ ] 6 core APIs enabled (plus Eventarc / Pub/Sub before 13f)  
+- [ ] Bucket has dated `incoming/employee_travel_YYYYMMDD.csv` objects (three for curl labs; `_20260910` after Eventarc)  
 - [ ] Dataset `travel_analytics` + 4 tables  
 - [ ] `travel-ingestion-sa` with 3 roles, **no key**  
 - [ ] Cloud Run up, env vars + SA set  
@@ -736,6 +888,8 @@ Skip: break-it, GitHub App trigger, WIF.
 - [ ] Logs show `execution_id` + dated `File received`  
 - [ ] Cloud Build SA has Run Admin + AR Writer + `serviceAccountUser` on runtime SA  
 - [ ] `gcloud builds submit` SUCCESS **or** GitHub trigger connected  
+- [ ] Eventarc `travel-gcs-incoming` **Active** in location **`us`** (US bucket); `/events`  
+- [ ] Upload `_20260910.csv` (no curl) → audit **300 / 286 / 14**; say “at-least-once + MERGE” if two rows  
 - [ ] Said "demo unauthenticated" out loud  
 - [ ] Cleanup or cost warning  
 
@@ -745,11 +899,12 @@ Skip: break-it, GitHub App trigger, WIF.
 
 Screenshots from the Console:
 
-1. GCS `incoming/` showing **three** dated objects  
+1. GCS `incoming/` showing **dated** objects (include `_20260910` if they did Eventarc)  
 2. SUCCESS JSON from `/load` of `employee_travel_20260908.csv` (286 / 14)  
 3. `employee_travel` COUNT matching days loaded  
 4. Duplicate query = 0 rows  
 5. `pipeline_audit` with `file_name` = the dated path  
 6. Paragraph: MERGE + why replaying **day 7** does not double, but loading **day 8** does add rows  
-7. Paragraph: three **runtime** IAM roles  
+7. Paragraph: three **runtime** IAM roles vs Eventarc SA (invoke only)  
 8. Stretch: Cloud Build History SUCCESS **or** Triggers page with `travel-ingestion-deploy` enabled  
+9. Stretch: Eventarc trigger location **`us`**, Logs `Eventarc object finalized`, audit from an **upload** (no curl)  

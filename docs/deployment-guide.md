@@ -31,6 +31,7 @@ Suggested names used in scripts: repository `travel-platform`, image `travel-ing
    - BigQuery API
    - Identity and Access Management (IAM) API
    - Cloud Build API (optional; used if you later switch to Cloud Build)
+   - Eventarc API, Eventarc Publishing API, Cloud Pub/Sub API (optional; GCS → `/events` automation)
 
 > **Screenshot placeholder:** Enabled APIs list (`images/screenshots/enabled-apis.png`).
 
@@ -48,6 +49,12 @@ gcloud services enable `
   bigquery.googleapis.com `
   iam.googleapis.com `
   cloudbuild.googleapis.com
+```
+
+Optional Eventarc (see [eventarc.md](eventarc.md)):
+
+```powershell
+gcloud services enable eventarc.googleapis.com eventarcpublishing.googleapis.com pubsub.googleapis.com
 ```
 
 ---
@@ -270,6 +277,8 @@ gcloud run services describe travel-ingestion-api `
 
 Automated path: set `ProjectId` and `BucketName` in `scripts/deploy.ps1`, then `.\scripts\deploy.ps1`.
 
+**GCS upload automation (optional):** after this revision is live, wire Eventarc so `incoming/*.csv` calls `POST /events` — [eventarc.md](eventarc.md) or `scripts/setup_eventarc.sh`.
+
 ---
 
 ## 8. Deployment verification
@@ -338,16 +347,25 @@ Run the same `curl.exe` `POST /load` again. Final table count should stay ~965; 
 | PowerShell `curl` returns unexpected object | `curl` alias is `Invoke-WebRequest` | Always `curl.exe` |
 | Local Docker 401/ADC errors | ADC not mounted | Mount `%APPDATA%\gcloud` to `/adc` and set `GOOGLE_APPLICATION_CREDENTIALS` to the **ADC** file, not an SA key |
 | Unauthenticated 403 on Cloud Run | Deployed with required auth | Demo: `--allow-unauthenticated`; else identity token |
+| Upload to GCS does nothing | No Eventarc trigger, wrong trigger location vs bucket, or old revision without `/events` | [eventarc.md](eventarc.md); `TRIGGER_LOCATION=us` for US multi-region buckets |
+| Eventarc trigger create fails (Pub/Sub) | GCS service account missing Pub/Sub Publisher | Grant `roles/pubsub.publisher` to `service-PROJECT_NUMBER@gs-project-accounts.iam.gserviceaccount.com` |
 
 ---
 
 ## 10. Cleanup
 
-Console: delete the Cloud Run service, Artifact Registry repository, GCS bucket, BigQuery dataset, and the service account (IAM).
+Console: delete the Eventarc trigger, Cloud Run service, Artifact Registry repository, GCS bucket, BigQuery dataset, and service accounts (IAM).
 
 CLI:
 
 ```powershell
+gcloud eventarc triggers delete travel-gcs-incoming `
+  --location YOUR_REGION --project YOUR_GCP_PROJECT_ID --quiet
+
+gcloud iam service-accounts delete `
+  travel-eventarc-sa@YOUR_GCP_PROJECT_ID.iam.gserviceaccount.com `
+  --project YOUR_GCP_PROJECT_ID --quiet
+
 gcloud run services delete travel-ingestion-api `
   --region YOUR_REGION --project YOUR_GCP_PROJECT_ID --quiet
 

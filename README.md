@@ -40,6 +40,7 @@ Deeper material:
 - [docs/architecture.md](docs/architecture.md) — deployment and data flows, components, validation order, security.
 - [docs/deployment-guide.md](docs/deployment-guide.md) — Console + CLI walkthrough, IAM roles, verification.
 - [docs/ci-cd.md](docs/ci-cd.md) — automate deployment after the first manual deploy (Cloud Build trigger or keyless GitHub Actions).
+- [docs/eventarc.md](docs/eventarc.md) — automate **loads**: new `incoming/*.csv` in GCS → Eventarc → `POST /events` (same pipeline as `/load`).
 
 ---
 
@@ -48,7 +49,8 @@ Deeper material:
 | Layer | Choice | Role |
 | --- | --- | --- |
 | Source | GCS object `incoming/employee_travel.csv` | Landing zone for the 1,000-row booking file |
-| Compute | Flask 3 + Gunicorn on Cloud Run (`PORT=8080`) | HTTP API: health, load, audit |
+| Compute | Flask 3 + Gunicorn on Cloud Run (`PORT=8080`) | HTTP API: health, load, events, audit |
+| Events | Eventarc (optional) | GCS object finalized → `POST /events` |
 | Warehouse | BigQuery dataset `travel_analytics` | Staging, final, rejected, audit tables |
 | Identity | ADC locally; Cloud Run attached service account | No JSON keys |
 | Packaging | `python:3.11-slim` image in Artifact Registry | Repeatable deploys via `scripts/deploy.ps1` |
@@ -106,7 +108,7 @@ python scripts/generate_sample_data.py
 python scripts/generate_sample_data.py --dates 20260910 20260911 --rows 500
 ```
 
-The API accepts any object path, so no code change is needed — just point `file` at the dated object, e.g. `incoming/employee_travel_20260908.csv`. The chosen name is recorded in the `source_file` lineage column and in `pipeline_audit.file_name`.
+The API accepts any object path on `/load`. Eventarc only auto-loads `incoming/*.csv`. The chosen name is recorded in the `source_file` lineage column and in `pipeline_audit.file_name`.
 
 | Column | Description |
 | --- | --- |
@@ -140,7 +142,7 @@ Expected split with the current file: **965 valid**, **35 rejected**. Exact coun
 
 ```text
 gcp-travel-data-ingestion/
-├── app.py                      # Flask factory: GET /, GET /audit, POST /load
+├── app.py                      # Flask factory: GET /, GET /audit, POST /load, POST /events
 ├── Dockerfile                  # Python 3.11-slim, non-root user, gunicorn
 ├── .dockerignore
 ├── .env.example                 # Variable names only; copy locally, never commit secrets
@@ -157,6 +159,7 @@ gcp-travel-data-ingestion/
 ├── docs/
 │   ├── architecture.md
 │   ├── ci-cd.md                # Automate deployment (Cloud Build trigger / GitHub Actions)
+│   ├── eventarc.md             # Automate loads (GCS → Eventarc → /events)
 │   ├── codebase-guide.md       # Folders, files, and how flows connect
 │   ├── deployment-guide.md
 │   └── teacher-guide.md        # Classroom / Udemy walkthrough
@@ -164,6 +167,7 @@ gcp-travel-data-ingestion/
 │   └── architecture.png       # Portfolio architecture image
 ├── scripts/
 │   ├── deploy.ps1              # Git pull → build → tag → push → Cloud Run → curl.exe
+│   ├── setup_eventarc.sh       # GCS object-finalized → Cloud Run /events
 │   ├── generate_sample_data.py # Generate timestamped daily CSV files
 │   ├── test_api.ps1            # Health, load, audit against a service URL
 │   └── sample_request.json     # bucket + file payload
@@ -176,6 +180,7 @@ gcp-travel-data-ingestion/
     ├── __init__.py
     ├── config.py               # Env-only config (GCP_PROJECT_ID, BQ_DATASET, …)
     ├── gcs_reader.py
+    ├── gcs_event.py            # Eventarc CloudEvent → incoming/*.csv
     ├── validator.py
     ├── transformer.py
     ├── bigquery_loader.py      # Staging load, MERGE, rejected load, audit query
@@ -503,6 +508,18 @@ JSON object required. `file` must end with `.csv`.
 
 If a BigQuery client was already created, a **FAILED** audit row is written when possible.
 
+### `POST /events`
+
+Eventarc destination. Body is GCS object metadata (CloudEvent), not `{bucket, file}`.
+
+| HTTP | When |
+| --- | --- |
+| 200 | `incoming/*.csv` processed (same JSON as `/load`) |
+| 204 | Ignored (not `incoming/*.csv`, or not object-finalized) |
+| 4xx/5xx | Same pipeline failures as `/load` |
+
+Setup: [docs/eventarc.md](docs/eventarc.md).
+
 ### `GET /audit`
 
 Query: `limit` (default 20, max 100).
@@ -627,7 +644,7 @@ Add files under `images/screenshots/` (or paste into the Udemy lecture):
 ## Interview questions (15)
 
 **1. Why Cloud Run + GCS + BigQuery instead of a single BigQuery load job?**  
-Cloud Run gives an HTTP contract, validation, and audit in application code. GCS is the landing zone; BigQuery is the warehouse. You can reject rows, MERGE on a key, and expose `/audit` without scheduling a brittle load job alone.
+Cloud Run gives an HTTP contract, validation, and audit in application code. GCS is the landing zone; BigQuery is the warehouse. You can reject rows, MERGE on a key, and expose `/audit` without scheduling a brittle load job alone. Eventarc can invoke `POST /events` on object finalize so new `incoming/*.csv` files load without a human curl.
 
 **2. Why not a service-account JSON key on the laptop or in the image?**  
 Keys are long-lived secrets that leak via Git and Docker layers. This project uses **ADC** locally (`gcloud auth application-default login`) and the **Cloud Run attached service account** in GCP. No `keys create`, no `GOOGLE_APPLICATION_CREDENTIALS` pointing at a downloaded SA key.

@@ -84,11 +84,11 @@ gcp-travel-data-ingestion/
 
 | File | Role | Talks to |
 | --- | --- | --- |
-| `app.py` | Flask factory: `GET /`, `GET /audit`, `POST /load`. Creates `execution_id` (UUID). Maps errors to HTTP 400/403/404/422/500. | All of `src/`, GCS + BigQuery clients |
+| `app.py` | Flask factory: `GET /`, `GET /audit`, `POST /load`, `POST /events`. Creates `execution_id` (UUID). Maps errors to HTTP 400/403/404/422/500. | All of `src/`, GCS + BigQuery clients |
 | `src/config.py` | Reads **environment only**: `GCP_PROJECT_ID`, `BQ_DATASET`, `BQ_LOCATION`, `PORT`, `LOG_LEVEL`. Builds table IDs `project.travel_analytics.employee_travel`. | `app.py`, loader, audit |
 | `src/logger.py` | Stdout logging with `execution_id=` on every line (Cloud Logging). | `app.py` |
 | `src/utils.py` | `PipelineError` + HTTP status, UTC timestamps, JSON-safe pandas values. | validator, gcs_reader, app |
-| `src/gcs_reader.py` | `blob.download_as_bytes()` → pandas CSV as **all strings**. Maps NotFound → 404, Forbidden → 403, empty/parse → 422. | Cloud Storage |
+| `src/gcs_event.py` | Parse Eventarc CloudEvents; keep only `incoming/*.csv`. | `POST /events` |
 | `src/validator.py` | Required columns + seven quality rules. Splits **valid** vs **rejected** (`rejection_reason`). In-file duplicate `booking_id`: keep first. | pandas only |
 | `src/transformer.py` | Trim; title-case names/cities; uppercase status/currency; `travel_duration_days`; lineage `processed_at`, `source_file`, `execution_id`. Rejected dates/prices stay strings. | pandas only |
 | `src/bigquery_loader.py` | Append staging → `MERGE` final on `booking_id` → append rejected. `GET /audit` query. | BigQuery |
@@ -101,6 +101,7 @@ Import graph (simplified):
 app.py
   ├── config.py
   ├── logger.py
+  ├── gcs_event.py
   ├── gcs_reader.py ──► utils.py
   ├── validator.py  ──► utils.py
   ├── transformer.py
@@ -114,7 +115,8 @@ app.py
 | --- | --- | --- | --- |
 | `GET` | `/` | No | Liveness: `status: UP` |
 | `GET` | `/audit` | BigQuery | Latest rows from `pipeline_audit` |
-| `POST` | `/load` | GCS + BigQuery | Full pipeline for **one** object |
+| `POST` | `/load` | GCS + BigQuery | Full pipeline for **one** object (`{bucket, file}`) |
+| `POST` | `/events` | GCS + BigQuery | Same pipeline; Eventarc Cloud Storage CloudEvent. Non-`incoming/*.csv` → **204** |
 
 Load body:
 
@@ -220,6 +222,7 @@ Cloud Run process: `gunicorn … app:app` with env `GCP_PROJECT_ID`, `BQ_DATASET
 | `sample_request.json` | Example `{bucket, file}` for curl | No |
 | `test_api.ps1` | Health + load + audit (Windows) | No |
 | `deploy.ps1` | git pull → docker build/tag/push → Cloud Run → curl | Optional; Cloud Build is the GCP-native equivalent |
+| `setup_eventarc.sh` | Enable APIs, Eventarc SA, GCS Pub/Sub publisher, create trigger | No (one-time GCP wiring) |
 
 ---
 
@@ -233,13 +236,14 @@ Cloud Run process: `gunicorn … app:app` with env `GCP_PROJECT_ID`, `BQ_DATASET
 | `docs/deployment-guide.md` | Console/CLI setup |
 | `docs/teacher-guide.md` | Click-by-click classroom script |
 | `docs/ci-cd.md` | Cloud Build trigger + GitHub Actions WIF |
+| `docs/eventarc.md` | GCS upload → Eventarc → `POST /events` |
 | `images/architecture.png` | Diagram for README |
 
 These files are **not** copied into the Cloud Run image.
 
 ---
 
-## Data flow: one `POST /load`
+## Data flow: `/load` or `/events`
 
 ```mermaid
 sequenceDiagram
@@ -296,11 +300,12 @@ CI/CD (`cloudbuild.yaml`) is those same three steps (build, push, deploy) run by
 
 ## What to open first (teaching order)
 
-1. `app.py` — `POST /load` is the wiring diagram in code.  
-2. `src/validator.py` + `src/transformer.py` — reject vs clean.  
-3. `src/bigquery_loader.py` + `sql/merge_employee_travel.sql` — same MERGE, two places.  
-4. `sql/create_tables.sql` — why four tables exist.  
-5. `Dockerfile` + `cloudbuild.yaml` — how that Python becomes Cloud Run.
+1. `app.py` — `POST /load` (manual) and `POST /events` (Eventarc) share `run_pipeline`.  
+2. `src/gcs_event.py` — why only `incoming/*.csv` is accepted from GCS events.  
+3. `src/validator.py` + `src/transformer.py` — reject vs clean.  
+4. `src/bigquery_loader.py` + `sql/merge_employee_travel.sql` — same MERGE, two places.  
+5. `sql/create_tables.sql` — why four tables exist.  
+6. `Dockerfile` + `cloudbuild.yaml` — how that Python becomes Cloud Run.
 
 ---
 
@@ -310,6 +315,7 @@ CI/CD (`cloudbuild.yaml`) is those same three steps (build, push, deploy) run by
 | --- | --- | --- |
 | Your user / ADC | Local Flask, Console, Cloud Shell | Broad enough to deploy |
 | `travel-ingestion-sa` | Cloud Run process (`app.py`) | Storage Object Viewer, BigQuery Data Editor, BigQuery Job User |
+| `travel-eventarc-sa` | Eventarc trigger | Eventarc Event Receiver, Cloud Run Invoker on the service |
 | `PROJECT_NUMBER@cloudbuild.gserviceaccount.com` | `cloudbuild.yaml` | Run Admin, Artifact Registry Writer, Service Account User on the runtime SA |
 
 No service-account JSON keys. See [ci-cd.md](ci-cd.md) and [deployment-guide.md](deployment-guide.md).
