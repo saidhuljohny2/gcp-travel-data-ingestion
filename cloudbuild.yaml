@@ -1,10 +1,9 @@
 # Cloud Build pipeline: build image -> push to Artifact Registry -> deploy to Cloud Run.
-# Used by a Cloud Build trigger (push to main) or manually:
+# Manual (tag defaults to "latest"):
 #   gcloud builds submit --config cloudbuild.yaml
-#
-# Substitutions can be overridden per project/trigger:
-#   gcloud builds submit --config cloudbuild.yaml \
-#     --substitutions=_REGION=us-central1,_BUCKET=my-bucket
+# Manual with git SHA:
+#   gcloud builds submit --config cloudbuild.yaml --substitutions=_IMAGE_TAG=$(git rev-parse --short HEAD)
+# Trigger builds should set _IMAGE_TAG=$SHORT_SHA (see docs/ci-cd.md).
 substitutions:
   _REGION: us-central1
   _REPOSITORY: travel-platform
@@ -12,20 +11,19 @@ substitutions:
   _RUNTIME_SA_ID: travel-ingestion-sa
   _BQ_DATASET: travel_analytics
   _BQ_LOCATION: US
+  _IMAGE_TAG: latest
 
 steps:
-  # 1) Build the container image, tagged with the commit SHA and 'latest'.
   - id: build
     name: gcr.io/cloud-builders/docker
     args:
       - build
       - -t
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}
       - -t
       - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:latest
       - .
 
-  # 2) Push both tags to Artifact Registry.
   - id: push
     name: gcr.io/cloud-builders/docker
     args:
@@ -33,8 +31,6 @@ steps:
       - --all-tags
       - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}
 
-  # 3) Deploy the immutable SHA-tagged image to Cloud Run with the runtime SA.
-  #    $PROJECT_ID expands at build time, so the runtime SA email is portable.
   - id: deploy
     name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
@@ -42,19 +38,17 @@ steps:
       - run
       - deploy
       - ${_SERVICE}
-      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}
       - --region=${_REGION}
       - --service-account=${_RUNTIME_SA_ID}@$PROJECT_ID.iam.gserviceaccount.com
       - --set-env-vars=GCP_PROJECT_ID=$PROJECT_ID,BQ_DATASET=${_BQ_DATASET},BQ_LOCATION=${_BQ_LOCATION},LOG_LEVEL=INFO
       - --allow-unauthenticated
       - --timeout=300
 
-# Record the built images in the build results.
 images:
-  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:latest
 
 options:
-  # Required when the build uses a user-specified/custom logging destination.
   logging: CLOUD_LOGGING_ONLY
   machineType: E2_HIGHCPU_8

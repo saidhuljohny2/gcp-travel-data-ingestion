@@ -80,7 +80,7 @@ gcloud iam service-accounts add-iam-policy-binding \
    - Event: **Push to a branch**
    - Branch: `^main$`
    - Configuration: **Cloud Build configuration file (yaml)** → `/cloudbuild.yaml`
-   - (Optional) add substitution overrides, e.g. `_REGION = us-central1`.
+   - Substitution: `_IMAGE_TAG` = `$SHORT_SHA` (so each deploy is tagged with the commit)
 3. **Create**.
 
 ### A2 (CLI alternative)
@@ -91,7 +91,8 @@ gcloud builds triggers create github \
   --repo-owner=YOUR_GITHUB_ORG \
   --repo-name=gcp-travel-data-ingestion \
   --branch-pattern='^main$' \
-  --build-config=cloudbuild.yaml
+  --build-config=cloudbuild.yaml \
+  --substitutions=_IMAGE_TAG=\$SHORT_SHA
 ```
 
 ### A3. Test it
@@ -106,7 +107,8 @@ Watch **Cloud Build → History**. On success, **Cloud Run → Revisions** shows
 Run a build manually any time without pushing:
 
 ```bash
-gcloud builds submit --config cloudbuild.yaml
+gcloud builds submit --config cloudbuild.yaml \
+  --substitutions=_IMAGE_TAG=$(git rev-parse --short HEAD)
 ```
 
 ---
