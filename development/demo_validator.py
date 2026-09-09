@@ -10,9 +10,10 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "development"))
 
-from demo_gcs_reader import read_csv_from_gcs
+from google.cloud import storage
+
+from src.gcs_reader import read_csv_from_gcs
 from src.validator import validate_records
 
 BUCKET = "travel-incoming-gcp-evening-batch-501811"
@@ -21,8 +22,9 @@ FILE = "incoming/employee_travel_20260907.csv"
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     logger = logging.getLogger("demo_validator")
+    client = storage.Client()
 
-    frame = read_csv_from_gcs(BUCKET, FILE)
+    frame = read_csv_from_gcs(BUCKET, FILE, client, logger)
     valid, rejected = validate_records(frame, logger)
 
     print(f"records_read:      {len(frame)}")
