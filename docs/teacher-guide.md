@@ -59,6 +59,7 @@ Cloud Build container builds are slow (3–8 min). Pre-warm so class does not st
 | 10 | Replay = idempotency | Cloud Run + BigQuery | 15 min |
 | 11 | Read the logs + audit | Logs Explorer | 15 min |
 | 12 | Break it on purpose | Cloud Shell | 10 min |
+| 12b | Automate deployment (CI/CD) | Cloud Build / GitHub | 20 min |
 | 13 | Interview recap + cleanup | (slides) / all areas | 20 min |
 
 Total ≈ 4 hours. 90-minute path is at the end.
@@ -139,23 +140,30 @@ Data:    GCS CSV → Cloud Run (validate + transform) → BigQuery
 
 **Point at.** Uniform access control — say "no per-object ACLs, IAM decides who reads."
 
-### Create the folder and upload
+### Create the folder and upload daily files
+
+**Say.** Production files arrive **daily** with a date in the name: `employee_travel_YYYYMMDD.csv`. We ship three ready-made days in `data/incoming/`.
 
 **Click.** Open the bucket → **Create folder** → name it `incoming` → **Create**.
 
-**Click.** Open `incoming` → **Upload files** → choose `data/employee_travel.csv` from the repo.
+**Click.** Open `incoming` → **Upload files** → select all three from the repo's `data/incoming/`:
+- `employee_travel_20260907.csv`
+- `employee_travel_20260908.csv`
+- `employee_travel_20260909.csv`
 
-**Point at.** The object path becomes `incoming/employee_travel.csv`.
+**Point at.** The object paths become `incoming/employee_travel_2026090X.csv`. Say: "The API takes any file name; the date lets us load one specific day."
 
-**Check.** Object `employee_travel.csv` shows ~1000 rows worth of size inside `incoming/`.
+**Check.** Three dated objects inside `incoming/` (each ~300 rows).
 
-**Ask.** Why keep the bucket private if the API needs the file?  
-*Answer: The Cloud Run service account gets read access via IAM — we never make data public.*
+**Ask.** Why put a timestamp in the file name instead of overwriting one file?  
+*Answer: Traceability and replay — each day is auditable, and `pipeline_audit.file_name` records exactly which day loaded.*
+
+> Need more days live? In Cloud Shell: `python scripts/generate_sample_data.py --dates 20260910 --rows 300` then upload.
 
 > Screenshot: `images/screenshots/gcs-object.png`
 
-> If drag-and-drop upload is blocked in your environment, use Cloud Shell:
-> `gcloud storage cp data/employee_travel.csv gs://YOUR_BUCKET/incoming/employee_travel.csv`
+> If drag-and-drop upload is blocked, use Cloud Shell:
+> `gcloud storage cp data/incoming/*.csv gs://YOUR_BUCKET/incoming/`
 
 ---
 
@@ -332,7 +340,7 @@ Once an image is in Artifact Registry, you can redeploy from the Console:
 
 **Say.** `/` was GET in a browser. `/load` is POST with a JSON body, so we use Cloud Shell curl (still inside the Console).
 
-**Type** in Cloud Shell:
+**Type** in Cloud Shell — load **one specific day** by its dated file name:
 
 ```bash
 URL="YOUR_CLOUD_RUN_URL"
@@ -340,18 +348,18 @@ BUCKET="YOUR_BUCKET"
 
 curl -s -X POST "$URL/load" \
   -H "Content-Type: application/json" \
-  -d "{\"bucket\":\"$BUCKET\",\"file\":\"incoming/employee_travel.csv\"}"
+  -d "{\"bucket\":\"$BUCKET\",\"file\":\"incoming/employee_travel_20260907.csv\"}"
 ```
 
-**Point at.** The SUCCESS envelope:
+**Point at.** The SUCCESS envelope (300-row daily file):
 
 ```json
-{"status":"SUCCESS","execution_id":"…","records_read":1000,"records_loaded":965,"records_rejected":35,"processing_time":"… seconds"}
+{"status":"SUCCESS","execution_id":"…","records_read":300,"records_loaded":286,"records_rejected":14,"processing_time":"… seconds"}
 ```
 
-**Say.** Read it left to right: 1000 read → 965 loaded → 35 rejected. Copy the `execution_id`; we'll trace it in logs.
+**Say.** Read it left to right: 300 read → 286 loaded → 14 rejected. Copy the `execution_id`; we'll trace it in logs. Then load day 2 and day 3 by changing the date in the file name — each day adds new bookings.
 
-**Check.** `records_loaded` = 965, `records_rejected` = 35.
+**Check.** `records_loaded` = 286, `records_rejected` = 14 for a daily file.
 
 **Ask.** What are the seven pipeline steps that just ran?  
 *Answer: read GCS → validate → transform → staging load → MERGE → rejected load → audit.*
@@ -366,7 +374,9 @@ curl -s -X POST "$URL/load" \
 
 **Click.** BigQuery → Studio → new query. Run each (from `sql/validation_queries.sql`), one at a time, narrating.
 
-**Total loaded — expect 965:**
+> **Numbers depend on what you loaded.** One daily file = **286**. All three daily files (distinct booking IDs) = **858**. The original `employee_travel.csv` = **965**. What never changes: duplicates stay **0**.
+
+**Total loaded:**
 
 ```sql
 SELECT COUNT(*) AS total_loaded FROM `travel_analytics.employee_travel`;
@@ -406,7 +416,7 @@ ORDER BY processed_at DESC LIMIT 5;
 
 **Point at.** Title-cased names, uppercase status/currency, `travel_duration_days` computed.
 
-**Check.** 965 rows; duplicate query empty; reject reasons listed; audit row `SUCCESS`.
+**Check.** Row count matches what you loaded (286 for one day); duplicate query empty; reject reasons listed; audit row `SUCCESS`.
 
 **Ask.** Which table would a Looker/Data Studio dashboard read?  
 *Answer: `employee_travel` only.*
@@ -419,26 +429,26 @@ ORDER BY processed_at DESC LIMIT 5;
 
 **Say.** The scary question: "If yesterday's file is re-sent, do we double our numbers?" Let's prove no.
 
-**Before running, predict on the board:**
+**Before running, predict on the board** (re-loading day 1, which had 286 valid):
 
-| Surface | After a 2nd SUCCESS |
+| Surface | After a 2nd SUCCESS of the same day |
 | --- | --- |
-| `employee_travel` count | still **965** |
+| `employee_travel` count | **unchanged** (still 286 for that day's IDs) |
 | duplicate booking_id | still **0** |
-| `travel_rejected` | **+35** (append history) |
+| `travel_rejected` | **+14** (append history) |
 | `pipeline_audit` | **+1** SUCCESS row |
 
-**Type** in Cloud Shell — the exact same command as Lesson 8:
+**Type** in Cloud Shell — the exact same command as Lesson 8 (same dated file):
 
 ```bash
 curl -s -X POST "$URL/load" \
   -H "Content-Type: application/json" \
-  -d "{\"bucket\":\"$BUCKET\",\"file\":\"incoming/employee_travel.csv\"}"
+  -d "{\"bucket\":\"$BUCKET\",\"file\":\"incoming/employee_travel_20260907.csv\"}"
 ```
 
 **Click.** Re-run the **total loaded** and **duplicate** queries in BigQuery.
 
-**Point at.** Count is **still 965**; duplicates **still empty**.
+**Point at.** Count is **unchanged**; duplicates **still empty**.
 
 **Say why (the MERGE):** open `sql/merge_employee_travel.sql`. Explain:
 1. USING only this run's staging rows (`WHERE execution_id = @execution_id`)
@@ -513,6 +523,46 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST "$URL/load" \
 
 ---
 
+## Lesson 12b — Automate the deployment (CI/CD)
+
+**Say.** We deployed by hand. In a real team nobody redeploys manually — a **push to `main`** rebuilds and redeploys. Same steps, run by a robot. Full setup: [ci-cd.md](ci-cd.md).
+
+**Point at.** [`cloudbuild.yaml`](../cloudbuild.yaml). Say: "This is exactly what we did by hand — build, push to Artifact Registry, deploy to Cloud Run — written down so it repeats."
+
+**Say the key upgrade.** Manual deploy tagged the image `:v1`. CI/CD tags it with the **commit SHA**, so every deploy is traceable and any old version can be rolled back.
+
+### Path A — Cloud Build trigger (all in Console)
+
+**Click.** ☰ → **Cloud Build → Triggers → Connect repository** → **GitHub** → authorize → pick the repo.
+
+**Click.** **Create trigger**:
+- Event: **Push to a branch**
+- Branch: `^main$`
+- Configuration: **Cloud Build configuration file** → `/cloudbuild.yaml`
+- **Create**.
+
+**Say the IAM (one time).** The Cloud Build service account needs **Cloud Run Admin**, **Artifact Registry Writer**, and **Service Account User** on the runtime SA (commands in [ci-cd.md](ci-cd.md) §A1). Without those the build succeeds but the deploy step 403s.
+
+**Do (live).** Make a trivial commit and push:
+
+```bash
+git commit --allow-empty -m "ci: trigger deploy"
+git push origin main
+```
+
+**Point at.** **Cloud Build → History** running; then **Cloud Run → Revisions** shows a new SHA-tagged revision.
+
+**Check.** New revision serving 100% traffic, created by Cloud Build (not you).
+
+### Path B — GitHub Actions, keyless (mention)
+
+**Say.** If the team lives in GitHub, use [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) with **Workload Identity Federation** — GitHub's OIDC token is swapped for short-lived Google creds. **Still no JSON key.** One-time pool/provider setup is in [ci-cd.md](ci-cd.md) §B.
+
+**Ask.** What did CI/CD change versus our manual deploy?  
+*Answer: The trigger (git push), the SHA image tag (traceable + rollbackable), and consistency — the steps are identical every time. No keys either way.*
+
+---
+
 ## Lesson 13 — Interview recap and cleanup
 
 **Interview drill (Console-friendly picks).** Use the 15 Q&A in [../README.md](../README.md#interview-questions-15). Prioritize:
@@ -531,7 +581,8 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST "$URL/load" \
 | BigQuery dataset | BigQuery → dataset ⋮ → **Delete dataset** |
 | Bucket | Cloud Storage → bucket ⋮ → **Delete** |
 | Service account | IAM & Admin → Service Accounts → **Delete** |
-| (Optional) Artifact Registry repo | Artifact Registry → `cloud-run-source-deploy` → **Delete** |
+| (Optional) Cloud Build trigger | Cloud Build → Triggers → **Delete** |
+| (Optional) Artifact Registry repo | Artifact Registry → `cloud-run-source-deploy` (or `travel-platform`) → **Delete** |
 
 **Say.** Deleting the dataset and bucket stops storage cost; deleting Cloud Run stops request cost.
 
@@ -556,8 +607,8 @@ Everything else (project, APIs, bucket create, dataset, tables, IAM, deploy conf
 4. Dataset + run `create_tables.sql` (15)
 5. Service account + 3 roles (10)
 6. Deploy via Cloud Shell (20)
-7. Health in browser + one `/load` (10)
-8. Two BigQuery queries: count 965, duplicates 0 (5)
+7. Health in browser + one dated `/load` (10)
+8. Two BigQuery queries: total loaded (286 for one day), duplicates 0 (5)
 
 Skip: local Flask, local Docker, break-it lesson, deep log tour.
 
@@ -567,15 +618,16 @@ Skip: local Flask, local Docker, break-it lesson, deep log tour.
 
 - [ ] Project selected, billing on
 - [ ] 6 APIs enabled
-- [ ] Bucket created, `incoming/employee_travel.csv` uploaded
+- [ ] Bucket created, daily `incoming/employee_travel_YYYYMMDD.csv` files uploaded
 - [ ] Dataset `travel_analytics` + 4 tables
 - [ ] `travel-ingestion-sa` with 3 roles, **no key**
 - [ ] Cloud Run deployed, env vars + SA set
 - [ ] `/` returns UP in browser
-- [ ] `/load` returns 965 / 35
-- [ ] BigQuery count = 965, duplicates = 0
-- [ ] Second `/load` still 965
+- [ ] `/load` of a daily file returns 286 / 14
+- [ ] BigQuery count matches loaded files, duplicates = 0
+- [ ] Second `/load` of same day leaves count unchanged
 - [ ] Logs show `execution_id` + `Pipeline success`
+- [ ] (Optional) Cloud Build trigger redeploys on `git push`
 - [ ] Said "demo unauthenticated" out loud
 - [ ] Cleanup done or cost warned
 
@@ -584,9 +636,10 @@ Skip: local Flask, local Docker, break-it lesson, deep log tour.
 ## Student homework (portfolio proof)
 
 Submit screenshots from the Console:
-1. SUCCESS JSON from `/load`
-2. `employee_travel` count = 965
+1. SUCCESS JSON from `/load` of a dated file (e.g. `employee_travel_20260908.csv`)
+2. `employee_travel` count matching the days you loaded
 3. Duplicate query = 0 rows
-4. `pipeline_audit` showing one SUCCESS row
+4. `pipeline_audit` showing one SUCCESS row per day, with `file_name` = the dated file
 5. One paragraph: how the MERGE prevented duplicates
 6. One paragraph: the three IAM roles and why each is needed
+7. Stretch: a screenshot of a Cloud Build run that deployed on `git push`

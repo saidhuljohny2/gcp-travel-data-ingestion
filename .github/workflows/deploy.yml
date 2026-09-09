@@ -1,0 +1,47 @@
+# Keyless CI/CD to Cloud Run using GitHub Actions + Workload Identity Federation.
+# No service-account JSON key is stored in GitHub. GitHub's OIDC token is
+# exchanged for short-lived Google credentials at run time.
+#
+# One-time setup is documented in docs/ci-cd.md (Workload Identity Federation).
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Required for the OIDC token exchange (keyless auth).
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  # Replace these three GitHub repository "Variables" (Settings -> Variables),
+  # or hardcode them here.
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+  WORKLOAD_IDENTITY_PROVIDER: ${{ vars.WIF_PROVIDER }}   # projects/NUMBER/locations/global/workloadIdentityPools/POOL/providers/PROVIDER
+  DEPLOYER_SA: ${{ vars.DEPLOYER_SA }}                   # github-deployer@PROJECT_ID.iam.gserviceaccount.com
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (keyless / OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.DEPLOYER_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build + push + deploy via Cloud Build
+        run: |
+          gcloud builds submit \
+            --config cloudbuild.yaml \
+            --substitutions=_REGION=${REGION}

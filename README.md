@@ -38,6 +38,7 @@ Deeper material:
 - [docs/teacher-guide.md](docs/teacher-guide.md) — step-by-step classroom script (say / show / do / check).
 - [docs/architecture.md](docs/architecture.md) — deployment and data flows, components, validation order, security.
 - [docs/deployment-guide.md](docs/deployment-guide.md) — Console + CLI walkthrough, IAM roles, verification.
+- [docs/ci-cd.md](docs/ci-cd.md) — automate deployment after the first manual deploy (Cloud Build trigger or keyless GitHub Actions).
 
 ---
 
@@ -86,6 +87,26 @@ A naive BigQuery load would mix bad rows into reports and create duplicates on r
 
 File: [`data/employee_travel.csv`](data/employee_travel.csv) — **1,000 data rows** plus a header.
 
+### Daily timestamped files (production naming)
+
+Real drops arrive daily as `employee_travel_YYYYMMDD.csv`. Three ready-made samples (300 rows each, ~14 rejected / ~286 valid, distinct `booking_id` ranges per day) live in [`data/incoming/`](data/incoming/):
+
+- `employee_travel_20260907.csv`
+- `employee_travel_20260908.csv`
+- `employee_travel_20260909.csv`
+
+Regenerate or add more days with the deterministic generator:
+
+```bash
+# Default: 3 files starting 2026-09-07, 300 rows each
+python scripts/generate_sample_data.py
+
+# Custom dates / size
+python scripts/generate_sample_data.py --dates 20260910 20260911 --rows 500
+```
+
+The API accepts any object path, so no code change is needed — just point `file` at the dated object, e.g. `incoming/employee_travel_20260908.csv`. The chosen name is recorded in the `source_file` lineage column and in `pipeline_audit.file_name`.
+
 | Column | Description |
 | --- | --- |
 | `booking_id` | Business key (`BKG…`) |
@@ -125,16 +146,23 @@ gcp-travel-data-ingestion/
 ├── .gitignore
 ├── requirements.txt
 ├── README.md
+├── cloudbuild.yaml             # CI/CD: build → push → deploy to Cloud Run
+├── .github/
+│   └── workflows/
+│       └── deploy.yml          # Keyless GitHub Actions deploy (Workload Identity)
 ├── data/
-│   └── employee_travel.csv    # 1000-row source (upload to GCS; not copied into the image)
+│   ├── employee_travel.csv    # 1000-row source (upload to GCS; not copied into the image)
+│   └── incoming/               # Daily timestamped samples (employee_travel_YYYYMMDD.csv)
 ├── docs/
 │   ├── architecture.md
+│   ├── ci-cd.md                # Automate deployment (Cloud Build trigger / GitHub Actions)
 │   ├── deployment-guide.md
 │   └── teacher-guide.md        # Classroom / Udemy walkthrough
 ├── images/
 │   └── architecture.png       # Portfolio architecture image
 ├── scripts/
 │   ├── deploy.ps1              # Git pull → build → tag → push → Cloud Run → curl.exe
+│   ├── generate_sample_data.py # Generate timestamped daily CSV files
 │   ├── test_api.ps1            # Health, load, audit against a service URL
 │   └── sample_request.json     # bucket + file payload
 ├── sql/

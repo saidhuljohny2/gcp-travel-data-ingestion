@@ -1,0 +1,301 @@
+booking_id,employee_id,employee_name,department,origin_city,destination_city,travel_date,return_date,travel_type,airline,ticket_price,currency,booking_status
+BKG100001,EMP00225,Isabella Rossi,Sales,tokyo,San Francisco,2026-09-14,2026-09-18,Domestic,Singapore Airlines,3955.36,EUR,cancelled
+BKG100002,EMP00029,Aarav Sharma,Engineering,dubai,tokyo,2026-09-18,2026-09-27,Domestic,United Airlines,2620.12,GBP,CONFIRMED
+BKG100003,EMP00306,Emma Johnson,Engineering,tokyo,Bengaluru,2026-09-12,2026-09-14,Domestic,Singapore Airlines,4096.52,GBP,CONFIRMED
+BKG100004,EMP00050,Ethan Brown,Sales,PARIS,new york,2026-09-12,2026-09-16,International,Air India,4068.06,GBP,PENDING
+BKG100005,EMP00330,Ethan Brown,Operations,PARIS,new york,2026-09-14,2026-09-18,Domestic,British Airways,4134.01,GBP,PENDING
+BKG100006,EMP00154,Mia Anderson,Marketing,LONDON,new york,2026-09-09,2026-09-20,Domestic,Lufthansa,602.78,INR,CONFIRMED
+BKG100007,EMP00233,Isabella Rossi,Finance,Sydney,new york,2026-09-23,2026-09-29,Domestic,British Airways,3475.93,USD,CONFIRMED
+BKG100008,EMP00025,  NOAH WILLIAMS  ,Sales,LONDON,Sydney,2026-09-17,2026-09-20,International,Air India,2968.26,GBP,PENDING
+BKG100009,EMP00136,Liam Chen,Operations,Toronto,LONDON,2026-09-22,2026-09-28,Domestic,Delta,2750.80,gbp,PENDING
+BKG100010,EMP00001,Noah Williams,Human Resources,new york,dubai,2026-09-26,2026-10-04,Domestic,Lufthansa,1498.32,USD,CANCELLED
+BKG100011,EMP00032,Olivia Davis,Engineering,dubai,Toronto,2026-09-27,2026-10-11,International,United Airlines,1685.24,USD,CONFIRMED
+BKG100012,EMP00281,Noah Williams,Marketing,Sydney,dubai,2026-09-14,2026-09-22,International,Air India,2620.11,EUR,cancelled
+BKG100013,EMP00077,Liam Chen,Marketing,Bengaluru,tokyo,2026-09-26,2026-10-09,Domestic,Air India,2148.90,GBP,CANCELLED
+BKG100014,EMP00243,Lucas Silva,Marketing, singapore ,San Francisco,2026-09-18,2026-09-30,Domestic,Emirates,2849.17,USD,CONFIRMED
+BKG100015,EMP00291,Priya Patel,Sales,tokyo,dubai,2026-09-24,2026-10-03,Domestic,Qantas,3185.24,INR,CANCELLED
+BKG100016,EMP00087,Priya Patel,Sales,Bengaluru,Sydney,2026-09-22,2026-09-27,International,Qantas,2514.41,EUR,PENDING
+BKG100017,EMP00114,  LIAM CHEN  ,Human Resources,LONDON,Toronto,2026-09-18,2026-09-24,International,Air India,905.25,USD,CANCELLED
+BKG100018,EMP00195,Arjun Nair,Finance,San Francisco,dubai,2026-09-21,2026-09-28,Domestic,Qantas,2822.93,USD,PENDING
+BKG100019,EMP00209,Emma Johnson,Sales,LONDON,Sydney,2026-09-26,2026-10-06,International,Lufthansa,445.59,GBP,CANCELLED
+BKG100020,EMP00278,Isabella Rossi,Finance,Sydney,dubai,2026-09-22,2026-10-06,International,Singapore Airlines,1569.40,USD,PENDING
+BKG100021,EMP00135,Lucas Silva,Operations,Sydney, singapore ,2026-09-17,2026-09-30,Domestic,Qantas,265.47,USD,PENDING
+BKG100022,EMP00155,Arjun Nair,Operations,new york, singapore ,2026-09-17,2026-09-20,International,Singapore Airlines,828.78,eur,PENDING
+BKG100023,EMP00059,Aarav Sharma,Engineering, singapore ,San Francisco,2026-09-25,2026-09-26,International,Delta,4084.14,GBP,cancelled
+BKG100024,EMP00002,Olivia Davis,Operations,LONDON,Sydney,2026-09-15,2026-09-29,International,Emirates,858.82,INR,CANCELLED
+BKG100025,EMP00108,Olivia Davis,Human Resources,Toronto,Bengaluru,2026-09-22,2026-10-02,Domestic,Singapore Airlines,2105.63,INR,PENDING
+BKG100026,EMP00135,  LUCAS SILVA  ,Finance,new york,PARIS,2026-09-25,2026-10-03,Domestic,United Airlines,1660.31,GBP,CANCELLED
+BKG100027,EMP00102,Arjun Nair,Operations,dubai,tokyo,2026-09-16,2026-09-24,International,Emirates,2543.96,GBP,CONFIRMED
+BKG100028,EMP00349,Arjun Nair,Human Resources,LONDON,Sydney,2026-09-14,2026-09-18,International,Air India,1752.62,USD,CANCELLED
+BKG100029,EMP00085,Emma Johnson,Sales,Bengaluru,tokyo,2026-09-12,2026-09-16,Domestic,Singapore Airlines,3734.55,INR,CONFIRMED
+BKG100030,EMP00296,Arjun Nair,Marketing,Bengaluru,tokyo,2026-09-17,2026-09-26,International,Singapore Airlines,1319.89,GBP,PENDING
+BKG100031,EMP00087,Priya Patel,Sales,new york,Toronto,2026-09-22,2026-10-03,International,British Airways,224.37,USD,CANCELLED
+BKG100032,EMP00229,Lucas Silva,Marketing,new york,tokyo,2026-09-16,2026-09-22,International,Singapore Airlines,2944.55,GBP,CONFIRMED
+BKG100033,EMP00346,Arjun Nair,Operations,PARIS, singapore ,2026-09-16,2026-09-18,Domestic,Lufthansa,1335.99,EUR,CONFIRMED
+BKG100034,EMP00115,Ethan Brown,Marketing,Toronto,dubai,2026-09-15,2026-09-27,Domestic,United Airlines,3006.18,EUR,confirmed
+BKG100035,EMP00203,  ISABELLA ROSSI  ,Marketing,San Francisco,Sydney,2026-09-23,2026-10-04,Domestic,Qantas,1487.24,eur,CANCELLED
+BKG100036,EMP00240,Aarav Sharma,Marketing,tokyo,LONDON,2026-09-20,2026-09-30,International,Singapore Airlines,2537.25,GBP,CONFIRMED
+BKG100037,EMP00037,Liam Chen,Engineering,Sydney,PARIS,2026-09-19,2026-09-22,Domestic,Singapore Airlines,2795.05,USD,CONFIRMED
+BKG100038,EMP00020,Arjun Nair,Operations,dubai,Sydney,2026-09-09,2026-09-22,Domestic,Delta,384.25,INR,CONFIRMED
+BKG100039,EMP00251,Noah Williams,Sales,new york,Toronto,2026-09-26,2026-09-30,International,United Airlines,966.76,EUR,CONFIRMED
+BKG100040,EMP00066,Liam Chen,Finance,dubai,tokyo,2026-09-11,2026-09-15,International,United Airlines,820.63,GBP,CANCELLED
+BKG100041,EMP00067,Lucas Silva,Human Resources,dubai,LONDON,2026-09-22,2026-09-29,Domestic,Lufthansa,1912.57,USD,CONFIRMED
+BKG100042,EMP00082,Priya Patel,Finance, singapore ,tokyo,2026-09-17,2026-09-24,International,Singapore Airlines,297.62,GBP,PENDING
+BKG100043,EMP00009,Mia Anderson,Finance,tokyo,PARIS,2026-09-20,2026-09-28,International,Air India,126.83,USD,CONFIRMED
+BKG100044,EMP00233,  LUCAS SILVA  ,Marketing,Sydney, singapore ,2026-09-24,2026-10-05,International,Air India,2783.58,INR,CANCELLED
+BKG100045,EMP00067,Aarav Sharma,Engineering,Bengaluru,Toronto,2026-09-14,2026-09-20,Domestic,Qantas,2023.52,USD,pending
+BKG100046,EMP00205,Lucas Silva,Operations,PARIS,tokyo,2026-09-14,2026-09-18,International,British Airways,2418.84,GBP,CANCELLED
+BKG100047,EMP00026,Sofia Martinez,Marketing,dubai,new york,2026-09-08,2026-09-16,International,Air India,1495.67,USD,CONFIRMED
+BKG100048,EMP00340,Sofia Martinez,Operations,new york,PARIS,2026-09-25,2026-10-03,Domestic,Qantas,2929.63,usd,CONFIRMED
+BKG100049,EMP00246,Emma Johnson,Sales,Toronto,dubai,2026-09-19,2026-10-02,International,Lufthansa,1030.38,GBP,CANCELLED
+BKG100050,EMP00030,Mia Anderson,Human Resources, singapore ,PARIS,2026-09-11,2026-09-16,Domestic,Delta,630.72,INR,CANCELLED
+BKG100051,EMP00347,Isabella Rossi,Sales, singapore ,San Francisco,2026-09-25,2026-10-02,Domestic,British Airways,3227.61,USD,CONFIRMED
+BKG100052,EMP00272,Priya Patel,Sales,dubai,new york,2026-09-08,2026-09-14,International,Lufthansa,1537.31,INR,PENDING
+BKG100053,EMP00226,  EMMA JOHNSON  ,Sales, singapore ,PARIS,2026-09-14,2026-09-18,Domestic,Emirates,2604.89,USD,PENDING
+BKG100054,EMP00107,Isabella Rossi,Sales,Sydney,Toronto,2026-09-12,2026-09-14,International,Singapore Airlines,2922.70,GBP,PENDING
+BKG100055,EMP00130,Lucas Silva,Finance, singapore ,Toronto,2026-09-27,2026-09-29,International,Delta,140.75,EUR,CANCELLED
+BKG100056,EMP00170,Mia Anderson,Operations,new york,dubai,2026-09-14,2026-09-18,Domestic,Singapore Airlines,2773.66,INR,confirmed
+BKG100057,EMP00081,Noah Williams,Sales,new york,Bengaluru,2026-09-18,2026-09-22,International,Delta,252.01,INR,PENDING
+BKG100058,EMP00110,Olivia Davis,Marketing, singapore ,PARIS,2026-09-27,2026-10-04,Domestic,Lufthansa,1301.81,GBP,PENDING
+BKG100059,EMP00019,Olivia Davis,Engineering,Toronto,San Francisco,2026-09-11,2026-09-13,Domestic,United Airlines,2686.18,EUR,CANCELLED
+BKG100060,EMP00148,Sofia Martinez,Operations,PARIS,tokyo,2026-09-18,2026-09-23,International,Delta,1938.78,INR,PENDING
+BKG100061,EMP00167,Olivia Davis,Operations,LONDON,PARIS,2026-09-17,2026-09-30,Domestic,United Airlines,1568.40,eur,CONFIRMED
+BKG100062,EMP00151,  LIAM CHEN  ,Finance,Bengaluru,PARIS,2026-09-15,2026-09-17,Domestic,British Airways,3035.51,GBP,PENDING
+BKG100063,EMP00047,Isabella Rossi,Marketing,dubai,Bengaluru,2026-09-13,2026-09-14,International,Delta,1840.36,GBP,PENDING
+BKG100064,EMP00275,Emma Johnson,Marketing, singapore ,new york,2026-09-17,2026-09-24,International,Singapore Airlines,624.21,USD,PENDING
+BKG100065,EMP00202,Arjun Nair,Finance,tokyo, singapore ,2026-09-17,2026-09-30,Domestic,Singapore Airlines,2618.09,USD,PENDING
+BKG100066,EMP00208,Liam Chen,Finance,PARIS,Sydney,2026-09-27,2026-10-08,International,United Airlines,2424.82,USD,CONFIRMED
+BKG100067,EMP00120,Emma Johnson,Finance, singapore ,dubai,2026-09-12,2026-09-18,International,Air India,4176.63,INR,confirmed
+BKG100068,EMP00225,Mia Anderson,Finance,Bengaluru,dubai,2026-09-12,2026-09-20,Domestic,Qantas,1603.45,GBP,PENDING
+BKG100069,EMP00254,Emma Johnson,Engineering,LONDON,San Francisco,2026-09-20,2026-10-04,Domestic,Air India,3506.53,GBP,CONFIRMED
+BKG100070,EMP00109,Aarav Sharma,Engineering,new york,LONDON,2026-09-17,2026-09-22,International,British Airways,2616.34,USD,PENDING
+BKG100071,EMP00092,  LIAM CHEN  ,Engineering, singapore ,Sydney,2026-09-14,2026-09-17,International,Singapore Airlines,1267.46,EUR,PENDING
+BKG100072,EMP00203,Liam Chen,Sales,Bengaluru,PARIS,2026-09-23,2026-10-01,Domestic,Lufthansa,4017.28,USD,PENDING
+BKG100073,EMP00023,Emma Johnson,Marketing,LONDON,PARIS,2026-09-18,2026-09-27,Domestic,Qantas,3475.72,EUR,CANCELLED
+BKG100074,EMP00246,Sofia Martinez,Operations,Sydney,tokyo,2026-09-16,2026-09-18,International,United Airlines,2926.84,inr,CANCELLED
+BKG100075,EMP00076,Emma Johnson,Marketing,dubai, singapore ,2026-09-17,2026-09-19,International,United Airlines,1455.10,USD,PENDING
+BKG100076,EMP00127,Sofia Martinez,Operations,dubai,San Francisco,2026-09-22,2026-09-25,Domestic,Emirates,2880.38,EUR,PENDING
+BKG100077,EMP00016,Mia Anderson,Engineering,LONDON,PARIS,2026-09-12,2026-09-24,International,Emirates,872.40,USD,CANCELLED
+BKG100078,EMP00188,Emma Johnson,Marketing,LONDON,tokyo,2026-09-08,2026-09-11,International,United Airlines,4047.76,INR,cancelled
+BKG100079,EMP00296,Olivia Davis,Engineering,LONDON,Toronto,2026-09-11,2026-09-22,International,Singapore Airlines,213.67,GBP,PENDING
+BKG100080,EMP00324,  PRIYA PATEL  ,Sales,tokyo,PARIS,2026-09-07,2026-09-18,Domestic,Air India,3704.68,USD,CONFIRMED
+BKG100081,EMP00121,Liam Chen,Marketing,Sydney,Toronto,2026-09-21,2026-10-01,International,Emirates,3919.99,USD,CONFIRMED
+BKG100082,EMP00005,Priya Patel,Marketing,LONDON,San Francisco,2026-09-22,2026-09-24,Domestic,Qantas,1998.21,INR,CANCELLED
+BKG100083,EMP00158,Aarav Sharma,Operations,Sydney,new york,2026-09-18,2026-10-01,International,Lufthansa,3859.96,GBP,PENDING
+BKG100084,EMP00281,Emma Johnson,Sales,tokyo,San Francisco,2026-09-11,2026-09-21,Domestic,Qantas,2480.90,USD,PENDING
+BKG100085,EMP00207,Ethan Brown,Finance,tokyo,Bengaluru,2026-09-20,2026-10-02,Domestic,United Airlines,1260.65,USD,PENDING
+BKG100086,EMP00279,Emma Johnson,Sales,PARIS,San Francisco,2026-09-07,2026-09-13,Domestic,Delta,185.05,GBP,PENDING
+BKG100087,EMP00171,Isabella Rossi,Marketing,dubai,LONDON,2026-09-15,2026-09-28,International,Air India,302.12,gbp,CANCELLED
+BKG100088,EMP00009,Olivia Davis,Sales,new york,tokyo,2026-09-21,2026-09-30,Domestic,British Airways,2073.26,GBP,CONFIRMED
+BKG100089,EMP00021,  LIAM CHEN  ,Finance,tokyo,Bengaluru,2026-09-22,2026-09-29,International,Qantas,1668.39,INR,pending
+BKG100090,EMP00110,Noah Williams,Engineering,LONDON,Sydney,2026-09-15,2026-09-17,Domestic,Air India,993.12,USD,CANCELLED
+BKG100091,EMP00289,Priya Patel,Human Resources,new york,tokyo,2026-09-19,2026-09-23,International,United Airlines,3410.36,GBP,CANCELLED
+BKG100092,EMP00302,Isabella Rossi,Finance,dubai,new york,2026-09-10,2026-09-21,International,Singapore Airlines,3095.08,EUR,CANCELLED
+BKG100093,EMP00264,Noah Williams,Engineering,new york,LONDON,2026-09-27,2026-09-28,International,Delta,2984.88,EUR,CANCELLED
+BKG100094,EMP00236,Olivia Davis,Operations,tokyo,PARIS,2026-09-28,2026-10-05,International,British Airways,3708.04,GBP,CONFIRMED
+BKG100095,EMP00072,Lucas Silva,Finance,tokyo,PARIS,2026-09-27,2026-10-02,Domestic,Delta,3812.64,EUR,PENDING
+BKG100096,EMP00115,Sofia Martinez,Finance,LONDON,new york,2026-09-24,2026-09-25,Domestic,Delta,2839.64,USD,PENDING
+BKG100097,EMP00292,Priya Patel,Marketing, singapore ,tokyo,2026-09-09,2026-09-14,International,Qantas,4093.57,INR,PENDING
+BKG100098,EMP00020,  AARAV SHARMA  ,Marketing,tokyo, singapore ,2026-09-19,2026-09-20,International,Lufthansa,3644.84,GBP,CANCELLED
+BKG100099,EMP00029,Aarav Sharma,Sales, singapore ,Sydney,2026-09-10,2026-09-14,International,United Airlines,607.98,GBP,CANCELLED
+BKG100100,EMP00253,Priya Patel,Sales,Toronto,Bengaluru,2026-09-24,2026-10-08,International,Singapore Airlines,1345.36,eur,pending
+BKG100101,EMP00177,Liam Chen,Human Resources,Toronto,new york,2026-09-08,2026-09-09,Domestic,British Airways,1189.94,USD,CANCELLED
+BKG100102,EMP00312,Priya Patel,Marketing,Toronto,Bengaluru,2026-09-27,2026-10-10,Domestic,Air India,3751.16,INR,CONFIRMED
+BKG100103,EMP00002,Olivia Davis,Operations,PARIS,San Francisco,2026-09-12,2026-09-14,Domestic,Emirates,923.20,INR,CONFIRMED
+BKG100104,EMP00105,Mia Anderson,Sales,San Francisco,dubai,2026-09-25,2026-10-01,Domestic,Delta,3551.13,EUR,PENDING
+BKG100105,EMP00233,Emma Johnson,Operations,dubai,PARIS,2026-09-17,2026-09-24,International,Singapore Airlines,341.89,EUR,PENDING
+BKG100106,EMP00190,Aarav Sharma,Sales, singapore ,Bengaluru,2026-09-14,2026-09-16,Domestic,British Airways,185.28,GBP,CANCELLED
+BKG100107,EMP00223,  MIA ANDERSON  ,Operations,new york,LONDON,2026-09-21,2026-09-22,Domestic,British Airways,1660.68,EUR,CONFIRMED
+BKG100108,EMP00028,Priya Patel,Human Resources,San Francisco,Toronto,2026-09-20,2026-10-03,Domestic,British Airways,1594.75,USD,CANCELLED
+BKG100109,EMP00220,Lucas Silva,Finance,LONDON,San Francisco,2026-09-26,2026-10-01,Domestic,Air India,3690.66,USD,PENDING
+BKG100110,EMP00142,Arjun Nair,Engineering,LONDON,Bengaluru,2026-09-14,2026-09-22,International,Singapore Airlines,2422.63,GBP,PENDING
+BKG100111,EMP00104,Sofia Martinez,Operations,San Francisco,Bengaluru,2026-09-09,2026-09-18,International,Lufthansa,2950.20,GBP,confirmed
+BKG100112,EMP00238,Isabella Rossi,Marketing,new york,Bengaluru,2026-09-11,2026-09-19,Domestic,Singapore Airlines,958.81,INR,CONFIRMED
+BKG100113,EMP00184,Isabella Rossi,Finance,tokyo,PARIS,2026-09-14,2026-09-23,Domestic,British Airways,2506.47,usd,CONFIRMED
+BKG100114,EMP00072,Emma Johnson,Finance,tokyo,Bengaluru,2026-09-28,2026-10-11,International,Delta,4157.95,INR,CONFIRMED
+BKG100115,EMP00235,Lucas Silva,Finance,LONDON,tokyo,2026-09-27,2026-10-09,Domestic,United Airlines,1528.36,INR,CANCELLED
+BKG100116,EMP00322,  ARJUN NAIR  ,Sales,tokyo,Toronto,2026-09-09,2026-09-18,Domestic,British Airways,1913.73,USD,CANCELLED
+BKG100117,EMP00213,Olivia Davis,Engineering,Bengaluru, singapore ,2026-09-28,2026-10-06,International,British Airways,575.18,USD,CANCELLED
+BKG100118,EMP00188,Mia Anderson,Operations,San Francisco,LONDON,2026-09-10,2026-09-14,Domestic,United Airlines,2230.68,INR,CANCELLED
+BKG100119,EMP00127,Priya Patel,Marketing,new york,Sydney,2026-09-22,2026-10-06,Domestic,Lufthansa,884.13,USD,CONFIRMED
+BKG100120,EMP00068,Noah Williams,Marketing,PARIS,Sydney,2026-09-19,2026-09-25,International,British Airways,1240.10,USD,CONFIRMED
+BKG100121,EMP00014,Arjun Nair,Sales,Toronto,Sydney,2026-09-25,2026-10-08,International,Emirates,597.68,GBP,CANCELLED
+BKG100122,EMP00165,Liam Chen,Sales,LONDON,PARIS,2026-09-13,2026-09-15,International,Emirates,3734.41,GBP,cancelled
+BKG100123,EMP00155,Liam Chen,Engineering,Sydney,dubai,2026-09-20,2026-09-21,International,Emirates,191.94,USD,CANCELLED
+BKG100124,EMP00049,Aarav Sharma,Operations,dubai,Toronto,2026-09-23,2026-09-25,International,United Airlines,249.38,USD,CONFIRMED
+BKG100125,EMP00338,  ETHAN BROWN  ,Sales,Toronto,LONDON,2026-09-23,2026-09-28,International,Qantas,1939.34,EUR,CANCELLED
+BKG100126,EMP00308,Priya Patel,Engineering,new york,San Francisco,2026-09-08,2026-09-12,Domestic,Singapore Airlines,708.43,gbp,CANCELLED
+BKG100127,EMP00350,Priya Patel,Operations,new york,Sydney,2026-09-14,2026-09-23,Domestic,Air India,949.08,INR,CANCELLED
+BKG100128,EMP00011,Arjun Nair,Finance,PARIS, singapore ,2026-09-28,2026-10-01,International,United Airlines,2039.79,INR,CANCELLED
+BKG100129,EMP00276,Priya Patel,Operations,tokyo,Sydney,2026-09-24,2026-10-04,Domestic,United Airlines,3634.46,USD,PENDING
+BKG100130,EMP00107,Aarav Sharma,Operations,San Francisco,Sydney,2026-09-07,2026-09-14,International,United Airlines,460.61,EUR,PENDING
+BKG100131,EMP00130,Arjun Nair,Operations,San Francisco,PARIS,2026-09-09,2026-09-15,Domestic,Lufthansa,280.28,USD,PENDING
+BKG100132,EMP00267,Lucas Silva,Engineering,San Francisco,Sydney,2026-09-23,2026-10-07,International,Qantas,324.32,USD,CANCELLED
+BKG100133,EMP00007,Olivia Davis,Sales,Toronto,dubai,2026-09-22,2026-09-26,Domestic,United Airlines,2468.88,GBP,cancelled
+BKG100134,EMP00113,  ETHAN BROWN  ,Sales,LONDON,San Francisco,2026-09-28,2026-10-01,Domestic,Emirates,1915.99,GBP,CANCELLED
+BKG100135,EMP00006,Olivia Davis,Engineering,Toronto,San Francisco,2026-09-20,2026-10-04,Domestic,United Airlines,681.93,EUR,CONFIRMED
+BKG100136,EMP00272,Ethan Brown,Human Resources, singapore ,new york,2026-09-16,2026-09-19,Domestic,Delta,1146.87,USD,PENDING
+BKG100137,EMP00177,Lucas Silva,Marketing,dubai,San Francisco,2026-09-17,2026-09-19,Domestic,Air India,420.19,USD,PENDING
+BKG100138,EMP00107,Ethan Brown,Human Resources,San Francisco,PARIS,2026-09-27,2026-10-03,International,Singapore Airlines,404.58,GBP,CONFIRMED
+BKG100139,EMP00194,Ethan Brown,Sales,LONDON,dubai,2026-09-13,2026-09-21,International,Lufthansa,3794.31,eur,CONFIRMED
+BKG100140,EMP00262,Isabella Rossi,Operations,new york,tokyo,2026-09-21,2026-09-25,International,Emirates,638.68,GBP,CONFIRMED
+BKG100141,EMP00259,Noah Williams,Marketing, singapore ,Bengaluru,2026-09-11,2026-09-24,Domestic,Delta,3252.39,USD,PENDING
+BKG100142,EMP00037,Aarav Sharma,Sales,PARIS,LONDON,2026-09-20,2026-09-26,Domestic,Lufthansa,3720.83,EUR,PENDING
+BKG100143,EMP00317,  NOAH WILLIAMS  ,Human Resources,Sydney,Toronto,2026-09-18,2026-09-25,Domestic,Qantas,1897.14,EUR,PENDING
+BKG100144,EMP00246,Noah Williams,Sales,San Francisco,LONDON,2026-09-19,2026-09-24,Domestic,Delta,386.13,EUR,confirmed
+BKG100145,EMP00255,Noah Williams,Finance,new york,San Francisco,2026-09-11,2026-09-21,International,Lufthansa,1301.31,GBP,CONFIRMED
+BKG100146,EMP00035,Priya Patel,Marketing,San Francisco,Sydney,2026-09-13,2026-09-20,Domestic,Air India,2403.08,GBP,CANCELLED
+BKG100147,EMP00253,Mia Anderson,Sales, singapore ,PARIS,2026-09-09,2026-09-22,Domestic,Emirates,4106.24,EUR,CANCELLED
+BKG100148,EMP00147,Liam Chen,Human Resources,San Francisco,new york,2026-09-10,2026-09-11,International,Singapore Airlines,1819.27,USD,CANCELLED
+BKG100149,EMP00241,Sofia Martinez,Marketing,new york,Sydney,2026-09-12,2026-09-24,International,United Airlines,3441.05,EUR,PENDING
+BKG100150,EMP00016,Olivia Davis,Sales,tokyo,Sydney,2026-09-19,2026-09-29,Domestic,Lufthansa,3574.65,USD,CONFIRMED
+BKG100151,EMP00204,Mia Anderson,Finance,dubai,Toronto,2026-09-15,2026-09-17,International,Air India,383.81,GBP,PENDING
+BKG100152,EMP00317,  ISABELLA ROSSI  ,Sales,San Francisco,Bengaluru,2026-09-14,2026-09-23,Domestic,Qantas,2779.31,eur,CANCELLED
+BKG100153,EMP00173,Liam Chen,Finance,San Francisco,Toronto,2026-09-24,2026-09-27,Domestic,Qantas,1344.71,INR,PENDING
+BKG100154,EMP00155,Ethan Brown,Marketing,Bengaluru,PARIS,2026-09-21,2026-09-29,Domestic,Air India,3972.39,EUR,CANCELLED
+BKG100155,EMP00048,Liam Chen,Finance,Bengaluru,tokyo,2026-09-10,2026-09-16,International,Emirates,1091.95,EUR,cancelled
+BKG100156,EMP00341,Priya Patel,Human Resources,PARIS, singapore ,2026-09-20,2026-09-23,International,Delta,1862.60,GBP,CONFIRMED
+BKG100157,EMP00174,Arjun Nair,Human Resources,new york,San Francisco,2026-09-12,2026-09-14,International,Delta,3619.14,INR,CONFIRMED
+BKG100158,EMP00003,Arjun Nair,Marketing,LONDON,San Francisco,2026-09-25,2026-09-27,Domestic,Emirates,1262.73,USD,CONFIRMED
+BKG100159,EMP00232,Lucas Silva,Sales,tokyo, singapore ,2026-09-14,2026-09-24,Domestic,Delta,654.35,GBP,CANCELLED
+BKG100160,EMP00069,Liam Chen,Sales,tokyo,dubai,2026-09-07,2026-09-21,International,Delta,1018.14,GBP,CANCELLED
+BKG100161,EMP00272,  SOFIA MARTINEZ  ,Marketing,PARIS,tokyo,2026-09-26,2026-10-06,Domestic,Delta,1482.00,USD,CANCELLED
+BKG100162,EMP00143,Olivia Davis,Human Resources,LONDON,PARIS,2026-09-20,2026-09-27,Domestic,Delta,1587.62,USD,CANCELLED
+BKG100163,EMP00345,Priya Patel,Sales,Bengaluru,dubai,2026-09-20,2026-09-25,International,United Airlines,1241.21,EUR,PENDING
+BKG100164,EMP00153,Lucas Silva,Finance,Bengaluru,Toronto,2026-09-07,2026-09-08,International,Delta,2811.44,GBP,CANCELLED
+BKG100165,EMP00096,Olivia Davis,Human Resources,Sydney,tokyo,2026-09-08,2026-09-22,International,Singapore Airlines,3863.36,usd,CONFIRMED
+BKG100166,EMP00100,Isabella Rossi,Engineering,Sydney,San Francisco,2026-09-08,2026-09-16,International,Singapore Airlines,3525.84,GBP,confirmed
+BKG100167,EMP00169,Liam Chen,Human Resources,dubai,new york,2026-09-21,2026-10-01,International,Singapore Airlines,1623.29,USD,PENDING
+BKG100168,EMP00065,Aarav Sharma,Marketing,PARIS, singapore ,2026-09-14,2026-09-24,Domestic,Singapore Airlines,3554.78,INR,CANCELLED
+BKG100169,EMP00277,Emma Johnson,Engineering,San Francisco,Bengaluru,2026-09-21,2026-09-22,International,British Airways,3652.92,USD,CONFIRMED
+BKG100170,EMP00222,  SOFIA MARTINEZ  ,Finance,San Francisco,LONDON,2026-09-17,2026-09-27,International,Singapore Airlines,948.94,GBP,PENDING
+BKG100171,EMP00190,Lucas Silva,Sales,PARIS,San Francisco,2026-09-13,2026-09-19,International,Singapore Airlines,3585.42,INR,PENDING
+BKG100172,EMP00127,Lucas Silva,Human Resources,PARIS,new york,2026-09-18,2026-09-29,Domestic,Qantas,350.98,INR,CONFIRMED
+BKG100173,EMP00082,Mia Anderson,Sales,Bengaluru,tokyo,2026-09-26,2026-09-28,Domestic,Lufthansa,465.99,EUR,CONFIRMED
+BKG100174,EMP00073,Isabella Rossi,Operations,PARIS,new york,2026-09-22,2026-09-27,Domestic,Emirates,1183.12,EUR,PENDING
+BKG100175,EMP00182,Noah Williams,Marketing,Bengaluru,dubai,2026-09-21,2026-09-26,International,Singapore Airlines,4051.71,INR,PENDING
+BKG100176,EMP00281,Liam Chen,Operations,Toronto, singapore ,2026-09-22,2026-10-01,International,Lufthansa,3538.57,GBP,CONFIRMED
+BKG100177,EMP00150,Emma Johnson,Marketing,Sydney, singapore ,2026-09-13,2026-09-25,Domestic,British Airways,2835.97,INR,pending
+BKG100178,EMP00171,Ethan Brown,Marketing,new york,PARIS,2026-09-19,2026-09-26,International,British Airways,555.41,gbp,CONFIRMED
+BKG100179,EMP00343,  EMMA JOHNSON  ,Operations,Sydney,San Francisco,2026-09-18,2026-09-23,Domestic,Lufthansa,769.50,GBP,PENDING
+BKG100180,EMP00091,Noah Williams,Human Resources,new york,Sydney,2026-09-25,2026-10-06,Domestic,Qantas,1816.37,INR,CONFIRMED
+BKG100181,EMP00157,Noah Williams,Sales,dubai,LONDON,2026-09-09,2026-09-13,Domestic,Lufthansa,4134.52,INR,PENDING
+BKG100182,EMP00115,Isabella Rossi,Engineering,dubai,Sydney,2026-09-24,2026-10-01,Domestic,United Airlines,740.09,INR,PENDING
+BKG100183,EMP00084,Isabella Rossi,Operations,new york,PARIS,2026-09-14,2026-09-15,International,Singapore Airlines,2331.75,USD,PENDING
+BKG100184,EMP00145,Liam Chen,Sales, singapore ,new york,2026-09-11,2026-09-21,International,Singapore Airlines,1427.64,EUR,CONFIRMED
+BKG100185,EMP00263,Ethan Brown,Human Resources,dubai,tokyo,2026-09-21,2026-10-02,International,United Airlines,2342.80,USD,PENDING
+BKG100186,EMP00099,Noah Williams,Engineering,dubai,Toronto,2026-09-08,2026-09-14,International,Qantas,772.27,GBP,CANCELLED
+BKG100187,EMP00320,Liam Chen,Operations,Bengaluru,tokyo,2026-09-20,2026-09-26,Domestic,British Airways,3674.30,INR,CONFIRMED
+BKG100188,EMP00088,  OLIVIA DAVIS  ,Sales, singapore ,tokyo,2026-09-18,2026-10-01,Domestic,Qantas,3610.86,INR,cancelled
+BKG100189,EMP00131,Ethan Brown,Marketing, singapore ,PARIS,2026-09-12,2026-09-21,International,Emirates,2621.16,EUR,PENDING
+BKG100190,EMP00172,Olivia Davis,Operations,tokyo,dubai,2026-09-08,2026-09-13,International,Air India,3310.60,USD,CONFIRMED
+BKG100191,EMP00068,Aarav Sharma,Sales,dubai,new york,2026-09-15,2026-09-18,International,Lufthansa,3016.02,gbp,CONFIRMED
+BKG100192,EMP00163,Olivia Davis,Operations,tokyo,San Francisco,2026-09-25,2026-10-06,Domestic,Qantas,3208.69,EUR,PENDING
+BKG100193,EMP00298,Aarav Sharma,Finance,LONDON,Sydney,2026-09-25,2026-10-07,International,Air India,877.72,INR,CONFIRMED
+BKG100194,EMP00172,Noah Williams,Marketing,tokyo,Bengaluru,2026-09-18,2026-09-27,Domestic,United Airlines,2792.40,USD,PENDING
+BKG100195,EMP00007,Aarav Sharma,Finance,Toronto,new york,2026-09-19,2026-10-01,International,United Airlines,1827.83,INR,CONFIRMED
+BKG100196,EMP00215,Emma Johnson,Operations,tokyo,new york,2026-09-12,2026-09-18,International,Singapore Airlines,2323.78,USD,PENDING
+BKG100197,EMP00027,  MIA ANDERSON  ,Human Resources,new york,Toronto,2026-09-23,2026-10-05,International,British Airways,2984.58,EUR,CANCELLED
+BKG100198,EMP00171,Priya Patel,Sales,new york,tokyo,2026-09-18,2026-09-23,Domestic,British Airways,1710.85,INR,CONFIRMED
+BKG100199,EMP00299,Isabella Rossi,Engineering,Bengaluru,PARIS,2026-09-21,2026-09-27,International,Singapore Airlines,3419.14,INR,confirmed
+BKG100200,EMP00311,Lucas Silva,Human Resources,new york, singapore ,2026-09-13,2026-09-21,International,United Airlines,4067.40,INR,PENDING
+BKG100201,EMP00324,Olivia Davis,Operations,tokyo,dubai,2026-09-18,2026-09-24,International,Singapore Airlines,2218.49,USD,CANCELLED
+BKG100202,EMP00097,Arjun Nair,Engineering,tokyo, singapore ,2026-09-07,2026-09-19,Domestic,United Airlines,3621.36,EUR,PENDING
+BKG100203,EMP00284,Isabella Rossi,Sales,Toronto,new york,2026-09-27,2026-10-11,International,Delta,1906.84,EUR,PENDING
+BKG100204,EMP00288,Arjun Nair,Finance,Toronto,tokyo,2026-09-19,2026-10-03,Domestic,Lufthansa,3183.84,usd,CANCELLED
+BKG100205,EMP00072,Lucas Silva,Sales,new york,Toronto,2026-09-09,2026-09-11,Domestic,Air India,1501.49,EUR,CANCELLED
+BKG100206,EMP00039,  LIAM CHEN  ,Marketing, singapore ,new york,2026-09-23,2026-10-02,International,Emirates,2010.00,EUR,PENDING
+BKG100207,EMP00177,Mia Anderson,Finance,LONDON,tokyo,2026-09-21,2026-10-05,Domestic,British Airways,815.77,GBP,CANCELLED
+BKG100208,EMP00189,Priya Patel,Finance,tokyo,PARIS,2026-09-12,2026-09-17,Domestic,Emirates,4173.69,USD,CANCELLED
+BKG100209,EMP00326,Ethan Brown,Finance,Sydney,San Francisco,2026-09-13,2026-09-24,Domestic,Qantas,2905.01,EUR,CONFIRMED
+BKG100210,EMP00223,Liam Chen,Marketing,PARIS, singapore ,2026-09-25,2026-10-09,Domestic,Singapore Airlines,428.67,INR,pending
+BKG100211,EMP00327,Ethan Brown,Operations,dubai,Bengaluru,2026-09-27,2026-09-29,International,Lufthansa,786.63,INR,CONFIRMED
+BKG100212,EMP00294,Emma Johnson,Marketing, singapore ,San Francisco,2026-09-27,2026-09-29,Domestic,Singapore Airlines,3059.80,EUR,CONFIRMED
+BKG100213,EMP00047,Emma Johnson,Operations,new york,San Francisco,2026-09-25,2026-10-03,International,Emirates,2402.71,EUR,CANCELLED
+BKG100214,EMP00178,Priya Patel,Finance,Sydney,dubai,2026-09-24,2026-09-30,International,Emirates,3520.74,GBP,CANCELLED
+BKG100215,EMP00029,  AARAV SHARMA  ,Operations,Toronto,new york,2026-09-10,2026-09-14,Domestic,British Airways,2545.36,USD,CONFIRMED
+BKG100216,EMP00023,Ethan Brown,Operations, singapore ,tokyo,2026-09-27,2026-10-07,Domestic,Lufthansa,4133.20,GBP,CANCELLED
+BKG100217,EMP00046,Priya Patel,Sales,Sydney,PARIS,2026-09-20,2026-10-01,Domestic,British Airways,1932.49,eur,PENDING
+BKG100218,EMP00191,Sofia Martinez,Human Resources,LONDON,PARIS,2026-09-24,2026-10-05,Domestic,Emirates,1603.28,EUR,CONFIRMED
+BKG100219,EMP00108,Liam Chen,Human Resources,new york,San Francisco,2026-09-14,2026-09-25,Domestic,Qantas,1173.09,USD,PENDING
+BKG100220,EMP00214,Arjun Nair,Human Resources,dubai,Bengaluru,2026-09-07,2026-09-17,International,Qantas,351.52,EUR,PENDING
+BKG100221,EMP00066,Noah Williams,Operations,tokyo, singapore ,2026-09-14,2026-09-25,Domestic,Lufthansa,2187.33,GBP,confirmed
+BKG100222,EMP00332,Priya Patel,Marketing,LONDON,Sydney,2026-09-21,2026-09-30,International,Qantas,1410.62,EUR,CONFIRMED
+BKG100223,EMP00204,Lucas Silva,Operations,tokyo,Sydney,2026-09-27,2026-10-09,International,Qantas,1446.97,GBP,PENDING
+BKG100224,EMP00333,  ISABELLA ROSSI  ,Sales,Bengaluru,Sydney,2026-09-07,2026-09-11,International,Qantas,1617.06,INR,PENDING
+BKG100225,EMP00045,Noah Williams,Human Resources,tokyo,Bengaluru,2026-09-15,2026-09-20,International,Qantas,2409.19,GBP,CONFIRMED
+BKG100226,EMP00228,Liam Chen,Human Resources,Toronto, singapore ,2026-09-21,2026-10-01,Domestic,Air India,2757.64,USD,CONFIRMED
+BKG100227,EMP00271,Aarav Sharma,Sales,Sydney, singapore ,2026-09-28,2026-10-04,Domestic,Delta,2618.22,EUR,CONFIRMED
+BKG100228,EMP00223,Noah Williams,Human Resources,Toronto,San Francisco,2026-09-09,2026-09-10,International,Lufthansa,3727.53,GBP,CANCELLED
+BKG100229,EMP00004,Arjun Nair,Human Resources,new york,Sydney,2026-09-10,2026-09-16,Domestic,Qantas,1562.05,USD,CANCELLED
+BKG100230,EMP00249,Isabella Rossi,Finance,new york,San Francisco,2026-09-19,2026-09-30,International,British Airways,4059.63,usd,PENDING
+BKG100231,EMP00328,Olivia Davis,Finance,Sydney,San Francisco,2026-09-14,2026-09-28,International,British Airways,1807.11,GBP,CONFIRMED
+BKG100232,EMP00269,Arjun Nair,Marketing,PARIS,new york,2026-09-20,2026-09-25,International,Singapore Airlines,3633.26,USD,confirmed
+BKG100233,EMP00223,  ISABELLA ROSSI  ,Operations,PARIS,Toronto,2026-09-27,2026-10-03,Domestic,Singapore Airlines,3251.36,INR,PENDING
+BKG100234,EMP00085,Aarav Sharma,Operations,Toronto,tokyo,2026-09-27,2026-09-29,Domestic,British Airways,1836.32,INR,PENDING
+BKG100235,EMP00243,Arjun Nair,Human Resources,Toronto,dubai,2026-09-17,2026-09-25,International,Singapore Airlines,3656.81,USD,CONFIRMED
+BKG100236,EMP00115,Emma Johnson,Finance,LONDON,Bengaluru,2026-09-15,2026-09-21,Domestic,Air India,390.35,INR,PENDING
+BKG100237,EMP00031,Olivia Davis,Operations,San Francisco,Toronto,2026-09-07,2026-09-17,International,British Airways,2221.41,EUR,CONFIRMED
+BKG100238,EMP00024,Emma Johnson,Operations,LONDON,PARIS,2026-09-19,2026-09-24,Domestic,Air India,1433.86,INR,CONFIRMED
+BKG100239,EMP00028,Olivia Davis,Finance,San Francisco, singapore ,2026-09-15,2026-09-28,Domestic,United Airlines,3646.02,GBP,PENDING
+BKG100240,EMP00034,Ethan Brown,Marketing,Toronto, singapore ,2026-09-20,2026-10-04,International,Singapore Airlines,2423.91,EUR,CONFIRMED
+BKG100241,EMP00247,Lucas Silva,Sales,Toronto,LONDON,2026-09-20,2026-09-28,International,Qantas,2018.00,USD,PENDING
+BKG100242,EMP00241,  LUCAS SILVA  ,Marketing,PARIS,dubai,2026-09-26,2026-09-30,Domestic,Qantas,3549.68,GBP,PENDING
+BKG100243,EMP00096,Ethan Brown,Sales,Bengaluru,PARIS,2026-09-17,2026-09-27,Domestic,Air India,3125.43,inr,cancelled
+BKG100244,EMP00160,Aarav Sharma,Human Resources,PARIS,LONDON,2026-09-14,2026-09-19,International,Qantas,553.25,INR,PENDING
+BKG100245,EMP00008,Arjun Nair,Human Resources,Bengaluru,LONDON,2026-09-10,2026-09-22,Domestic,Emirates,1048.70,USD,CANCELLED
+BKG100246,EMP00168,Liam Chen,Marketing,PARIS,new york,2026-09-15,2026-09-28,Domestic,Delta,3719.27,GBP,CANCELLED
+BKG100247,EMP00249,Ethan Brown,Operations,Sydney, singapore ,2026-09-13,2026-09-14,Domestic,British Airways,1617.64,EUR,CANCELLED
+BKG100248,EMP00225,Ethan Brown,Engineering,Bengaluru,PARIS,2026-09-18,2026-09-23,International,United Airlines,1326.00,EUR,CONFIRMED
+BKG100249,EMP00015,Priya Patel,Human Resources,tokyo,new york,2026-09-12,2026-09-21,International,Lufthansa,554.75,USD,PENDING
+BKG100250,EMP00200,Olivia Davis,Human Resources,LONDON,Toronto,2026-09-27,2026-10-02,International,Lufthansa,2402.28,GBP,CONFIRMED
+BKG100251,EMP00305,  PRIYA PATEL  ,Operations,tokyo,Bengaluru,2026-09-20,2026-10-02,Domestic,Lufthansa,2318.17,USD,CANCELLED
+BKG100252,EMP00050,Emma Johnson,Marketing,Toronto,LONDON,2026-09-27,2026-09-30,International,Emirates,1059.66,INR,PENDING
+BKG100253,EMP00230,Liam Chen,Finance,LONDON,Bengaluru,2026-09-20,2026-09-23,Domestic,Delta,666.53,INR,PENDING
+BKG100254,EMP00122,Mia Anderson,Operations,Bengaluru,Sydney,2026-09-20,2026-09-23,Domestic,Lufthansa,2151.34,USD,pending
+BKG100255,EMP00275,Olivia Davis,Engineering,new york,dubai,2026-09-16,2026-09-18,International,Air India,2762.00,EUR,CONFIRMED
+BKG100256,EMP00007,Priya Patel,Marketing,PARIS,Sydney,2026-09-22,2026-09-26,Domestic,United Airlines,3099.38,usd,CONFIRMED
+BKG100257,EMP00166,Mia Anderson,Finance,tokyo,PARIS,2026-09-22,2026-09-30,Domestic,Lufthansa,2736.70,INR,CONFIRMED
+BKG100258,EMP00217,Mia Anderson,Sales,dubai,Sydney,2026-09-17,2026-09-24,Domestic,United Airlines,157.30,INR,PENDING
+BKG100259,EMP00071,Liam Chen,Operations,Sydney,LONDON,2026-09-28,2026-10-11,Domestic,Lufthansa,1916.47,GBP,PENDING
+BKG100260,EMP00116,  PRIYA PATEL  ,Human Resources,LONDON,tokyo,2026-09-16,2026-09-29,Domestic,Emirates,3411.31,USD,PENDING
+BKG100261,EMP00195,Ethan Brown,Operations,dubai,new york,2026-09-09,2026-09-18,Domestic,Qantas,3690.86,USD,CONFIRMED
+BKG100262,EMP00126,Emma Johnson,Marketing, singapore ,new york,2026-09-18,2026-09-30,International,Delta,1769.63,INR,CANCELLED
+BKG100263,EMP00258,Lucas Silva,Finance,LONDON,dubai,2026-09-12,2026-09-26,International,United Airlines,439.13,INR,CONFIRMED
+BKG100264,EMP00207,Aarav Sharma,Sales,new york,dubai,2026-09-07,2026-09-14,Domestic,Qantas,1724.93,INR,CONFIRMED
+BKG100265,EMP00251,Noah Williams,Finance,San Francisco,new york,2026-09-09,2026-09-10,International,Qantas,2412.44,GBP,cancelled
+BKG100266,EMP00217,Aarav Sharma,Sales,dubai,new york,2026-09-07,2026-09-18,Domestic,Singapore Airlines,3579.18,GBP,CONFIRMED
+BKG100267,EMP00339,Liam Chen,Operations,new york,tokyo,2026-09-23,2026-10-02,Domestic,Air India,1701.62,GBP,PENDING
+BKG100268,EMP00021,Isabella Rossi,Finance,Toronto,LONDON,2026-09-19,2026-09-23,Domestic,Emirates,3316.44,EUR,PENDING
+BKG100269,EMP00344,  PRIYA PATEL  ,Finance,dubai,Toronto,2026-09-18,2026-09-30,International,Singapore Airlines,3349.67,usd,PENDING
+BKG100270,EMP00339,Priya Patel,Operations,PARIS,new york,2026-09-16,2026-09-30,Domestic,United Airlines,2970.61,INR,PENDING
+BKG100271,EMP00154,Mia Anderson,Operations,tokyo,Bengaluru,2026-09-20,2026-09-18,International,Lufthansa,505.58,GBP,PENDING
+BKG100272,EMP00306,Priya Patel,Marketing,new york, singapore ,2026-09-07,2026-09-05,Domestic,British Airways,2322.65,EUR,CONFIRMED
+BKG100273,EMP00031,Emma Johnson,Finance,Sydney,PARIS,2026-99-42,2026-09-24,Domestic,Lufthansa,3583.39,EUR,CANCELLED
+BKG100274,EMP00309,Emma Johnson,Operations, singapore ,San Francisco,2026-99-42,2026-09-27,International,British Airways,3386.52,EUR,CANCELLED
+BKG100275,EMP00124,Priya Patel,Sales,San Francisco,PARIS,2026-09-27,2026-10-07,International,Qantas,3914.09,INR,APPROVED
+BKG100276,EMP00305,Isabella Rossi,Finance,LONDON,San Francisco,2026-09-27,2026-10-09,Domestic,Air India,178.94,GBP,APPROVED
+BKG100277,EMP00112,Arjun Nair,Marketing,Bengaluru,new york,2026-09-08,2026-09-20,International,Emirates,-50.00,GBP,CANCELLED
+BKG100278,EMP00252,  OLIVIA DAVIS  ,Engineering,Bengaluru, singapore ,2026-09-23,2026-09-29,Domestic,Delta,-50.00,INR,CANCELLED
+BKG100279,EMP00326,   ,Finance,PARIS,Sydney,2026-09-13,2026-09-17,Domestic,United Airlines,813.79,INR,CANCELLED
+BKG100280,EMP00193,   ,Human Resources,Toronto,Bengaluru,2026-09-25,2026-10-08,Domestic,Qantas,861.88,GBP,PENDING
+BKG100281,,Emma Johnson,Engineering,new york,San Francisco,2026-09-18,2026-09-21,Domestic,Qantas,1139.12,INR,CANCELLED
+BKG100282,,Noah Williams,Finance, singapore ,Toronto,2026-09-21,2026-09-28,International,Delta,603.44,inr,PENDING
+BKG100013,EMP00126,Lucas Silva,Sales,new york,PARIS,2026-09-22,2026-10-03,International,Air India,1426.66,GBP,PENDING
+BKG100014,EMP00216,Sofia Martinez,Human Resources,San Francisco,LONDON,2026-09-20,2026-09-21,Domestic,British Airways,396.04,EUR,CONFIRMED
+BKG100285,EMP00069,Aarav Sharma,Marketing,LONDON,Sydney,2026-09-25,2026-10-09,International,Emirates,1174.28,INR,CONFIRMED
+BKG100286,EMP00337,Lucas Silva,Finance,LONDON, singapore ,2026-09-25,2026-10-04,Domestic,Delta,1613.57,EUR,CONFIRMED
+BKG100287,EMP00205,  AARAV SHARMA  ,Human Resources, singapore ,San Francisco,2026-09-23,2026-09-24,International,Singapore Airlines,1000.14,GBP,confirmed
+BKG100288,EMP00038,Aarav Sharma,Operations,PARIS,LONDON,2026-09-27,2026-09-29,Domestic,United Airlines,2048.77,GBP,PENDING
+BKG100289,EMP00231,Olivia Davis,Human Resources,tokyo,PARIS,2026-09-14,2026-09-15,International,Air India,2941.19,GBP,PENDING
+BKG100290,EMP00311,Isabella Rossi,Finance, singapore ,dubai,2026-09-26,2026-10-01,Domestic,Emirates,1383.18,INR,CANCELLED
+BKG100291,EMP00015,Sofia Martinez,Engineering,new york,San Francisco,2026-09-27,2026-10-08,International,Singapore Airlines,282.12,INR,CANCELLED
+BKG100292,EMP00050,Isabella Rossi,Sales, singapore ,Toronto,2026-09-20,2026-10-02,Domestic,Qantas,2350.15,USD,PENDING
+BKG100293,EMP00097,Arjun Nair,Sales,dubai,San Francisco,2026-09-23,2026-09-28,International,Qantas,2420.72,INR,CONFIRMED
+BKG100294,EMP00271,Aarav Sharma,Operations,PARIS, singapore ,2026-09-18,2026-09-21,Domestic,Air India,2243.31,GBP,CANCELLED
+BKG100295,EMP00181,Arjun Nair,Finance,new york,dubai,2026-09-16,2026-09-20,Domestic,Delta,193.83,eur,CANCELLED
+BKG100296,EMP00167,  ARJUN NAIR  ,Human Resources, singapore ,Toronto,2026-09-21,2026-09-29,Domestic,Delta,3068.38,EUR,CANCELLED
+BKG100297,EMP00302,Isabella Rossi,Marketing,PARIS,new york,2026-09-14,2026-09-16,Domestic,British Airways,3963.33,INR,CONFIRMED
+BKG100298,EMP00054,Emma Johnson,Sales,PARIS,new york,2026-09-26,2026-09-28,Domestic,United Airlines,1941.04,GBP,pending
+BKG100299,EMP00147,Olivia Davis,Engineering,Bengaluru,PARIS,2026-09-13,2026-09-19,International,Singapore Airlines,2673.86,INR,CANCELLED
+BKG100300,EMP00311,Liam Chen,Finance,new york,LONDON,2026-09-27,2026-09-30,Domestic,Lufthansa,304.95,USD,CANCELLED
