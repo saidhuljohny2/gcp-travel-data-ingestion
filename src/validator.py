@@ -4,8 +4,6 @@ import logging
 
 import pandas as pd
 
-from src.utils import InvalidSchemaError
-
 REQUIRED_COLUMNS = [
     "booking_id",
     "employee_id",
@@ -36,7 +34,7 @@ def validate_records(
     logger.info("Validation started for %d records", len(frame))
     missing = [column for column in REQUIRED_COLUMNS if column not in frame.columns]
     if missing:
-        raise InvalidSchemaError(missing)
+        raise ValueError(f"Invalid CSV schema; missing columns: {', '.join(missing)}")
 
     working = frame[REQUIRED_COLUMNS].copy()
     travel_dates = pd.to_datetime(working["travel_date"].str.strip(), errors="coerce")

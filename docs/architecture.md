@@ -114,7 +114,7 @@ sequenceDiagram
 Order is **read → validate → transform → load**. It is not transform-first and not a single BigQuery `LOAD` with autodetect.
 
 1. **Read** — Preserve raw strings so “blank” vs “0” vs “APPROVED” stay distinguishable.
-2. **Validate** — Fail the whole run only for unusable files (`InvalidSchemaError`, empty file, parse error). Otherwise row-level rules:
+2. **Validate** — Fail the whole run only for unusable files (missing-column schema, empty file, parse error — all raised as `ValueError` → HTTP 422). Otherwise row-level rules:
    - `booking_id` / `employee_id` / `employee_name` present
    - duplicate `booking_id` in file (keep first)
    - `ticket_price` numeric and `> 0`

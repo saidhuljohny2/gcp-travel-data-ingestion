@@ -7,8 +7,6 @@ from google.api_core.exceptions import Forbidden, NotFound
 from google.cloud import storage
 import pandas as pd
 
-from src.utils import EmptyFileError, PipelineError, SourceFileError
-
 
 def read_csv_from_gcs(
     bucket_name: str,
@@ -21,25 +19,18 @@ def read_csv_from_gcs(
     try:
         payload = client.bucket(bucket_name).blob(object_name).download_as_bytes()
     except NotFound as exc:
-        raise SourceFileError(
-            f"GCS object not found: gs://{bucket_name}/{object_name}", 404
-        ) from exc
+        raise FileNotFoundError(f"GCS object not found: gs://{bucket_name}/{object_name}") from exc
     except Forbidden as exc:
-        raise PipelineError("GCS permission denied while reading source file", 403) from exc
+        raise PermissionError("GCS permission denied while reading source file") from exc
 
     if not payload.strip():
-        raise EmptyFileError()
+        raise ValueError("The CSV file is empty")
 
     try:
-        frame = pd.read_csv(
-            BytesIO(payload),
-            dtype=str,
-            keep_default_na=False,
-            na_filter=False,
-        )
+        frame = pd.read_csv(BytesIO(payload), dtype=str, keep_default_na=False, na_filter=False)
     except (pd.errors.EmptyDataError, pd.errors.ParserError, UnicodeDecodeError) as exc:
-        raise SourceFileError(f"Unable to parse CSV: {exc}", 422) from exc
+        raise ValueError(f"Unable to parse CSV: {exc}") from exc
 
     if frame.empty:
-        raise EmptyFileError()
+        raise ValueError("The CSV file is empty")
     return frame

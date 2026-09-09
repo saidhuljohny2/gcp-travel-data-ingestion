@@ -16,7 +16,7 @@ from src.config import Config
 from src.gcs_reader import read_csv_from_gcs
 from src.logger import configure_logging, with_execution_id
 from src.transformer import transform_rejected_records, transform_valid_records
-from src.utils import PipelineError, RequestValidationError, json_safe, utc_now
+from src.utils import EXPECTED_ERRORS, PipelineError, http_status, json_safe, utc_now
 from src.validator import validate_records
 
 
@@ -62,9 +62,9 @@ def create_app(
                 {key: json_safe(value) for key, value in row.items()} for row in rows
             ]
             return jsonify(status="SUCCESS", executions=payload), 200
-        except PipelineError as exc:
+        except EXPECTED_ERRORS as exc:
             logger.error("Audit lookup failed: %s", exc)
-            return jsonify(status="FAILED", message=str(exc)), exc.status_code
+            return jsonify(status="FAILED", message=str(exc)), http_status(exc)
         except Exception:
             logger.exception("Unexpected audit lookup failure")
             return jsonify(status="FAILED", message="Unexpected server error"), 500
@@ -86,15 +86,15 @@ def create_app(
         try:
             payload = request.get_json(silent=True)
             if not isinstance(payload, dict):
-                raise RequestValidationError("Request body must be a JSON object")
+                raise PipelineError("Request body must be a JSON object", 400)
             bucket = str(payload.get("bucket", "")).strip()
             file_name = str(payload.get("file", "")).strip()
             if not bucket:
-                raise RequestValidationError("'bucket' is required")
+                raise PipelineError("'bucket' is required", 400)
             if not file_name:
-                raise RequestValidationError("'file' is required")
+                raise PipelineError("'file' is required", 400)
             if not file_name.lower().endswith(".csv"):
-                raise RequestValidationError("'file' must reference a CSV object")
+                raise PipelineError("'file' must reference a CSV object", 400)
 
             gcs, bq, resolved = clients()
             source = read_csv_from_gcs(bucket, file_name, gcs, execution_logger)
@@ -144,8 +144,8 @@ def create_app(
             ), 200
 
         except Exception as exc:
-            status_code = exc.status_code if isinstance(exc, PipelineError) else 500
-            message = str(exc) if isinstance(exc, PipelineError) else "Unexpected server error"
+            status_code = http_status(exc)
+            message = str(exc) if isinstance(exc, EXPECTED_ERRORS) else "Unexpected server error"
             execution_logger.exception("Pipeline failure: %s", exc)
             # API-validation failures happen before data clients are needed. Make a
             # best-effort client initialization so those executions are audited too.
