@@ -35,6 +35,7 @@ The checked-in diagram shows both deployment and data flow. See [docs/architectu
 
 Deeper material:
 
+- [docs/codebase-guide.md](docs/codebase-guide.md) — repo map: folders, files, imports, data and deploy flows.
 - [docs/teacher-guide.md](docs/teacher-guide.md) — step-by-step classroom script (say / show / do / check).
 - [docs/architecture.md](docs/architecture.md) — deployment and data flows, components, validation order, security.
 - [docs/deployment-guide.md](docs/deployment-guide.md) — Console + CLI walkthrough, IAM roles, verification.
@@ -156,6 +157,7 @@ gcp-travel-data-ingestion/
 ├── docs/
 │   ├── architecture.md
 │   ├── ci-cd.md                # Automate deployment (Cloud Build trigger / GitHub Actions)
+│   ├── codebase-guide.md       # Folders, files, and how flows connect
 │   ├── deployment-guide.md
 │   └── teacher-guide.md        # Classroom / Udemy walkthrough
 ├── images/
