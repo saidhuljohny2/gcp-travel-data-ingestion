@@ -1,8 +1,15 @@
 # Architecture
 
-This document describes how the GCP Travel Data Ingestion Platform is **deployed** and how **data** moves from a CSV in Cloud Storage to curated BigQuery tables. Implementation details match `app.py`, `src/`, `Dockerfile`, `sql/`, and `scripts/deploy.ps1`.
+This document describes how the GCP Travel Data Ingestion Platform is **deployed** and how **data** moves from a CSV in Cloud Storage to curated BigQuery tables. Implementation details match `app.py`, `src/` (including `gcs_event.py`), `Dockerfile`, `sql/`, `cloudbuild.yaml`, and Eventarc wiring in [eventarc.md](eventarc.md).
 
-**Identity:** local runs use Application Default Credentials (ADC). Cloud Run uses the attached runtime service account. **No service-account key JSON is used.**
+There are **two planes**. They must not be collapsed into one arrow on the whiteboard.
+
+| Plane | Trigger | What changes |
+| --- | --- | --- |
+| **Deploy** | `git push` / Cloud Build / `gcloud run deploy` | New Cloud Run *revision* (container). Does not read CSVs. |
+| **Data** | `POST /load` **or** Eventarc `POST /events` | One GCS object → validate → BigQuery. Does not rebuild the image. |
+
+**Identity:** local runs use Application Default Credentials (ADC). Cloud Run uses `travel-ingestion-sa`. Eventarc invokes Cloud Run as `travel-eventarc-sa`. **No service-account key JSON is used.**
 
 ---
 
@@ -26,8 +33,10 @@ flowchart LR
   DockerBuild --> Tag["docker tag"]
   Tag --> AR
   AR --> CR
-  CR --> Trigger["curl.exe POST /load"]
+  CR --> Manual["optional curl.exe POST /load"]
 ```
+
+Eventarc is **not** on this diagram. A new image does not load yesterday's CSV.
 
 ```mermaid
 sequenceDiagram
@@ -41,7 +50,7 @@ sequenceDiagram
   Dev->>AR: configure-docker + push tagged image
   Dev->>CR: deploy image, env vars, runtime SA
   Note over CR: --allow-unauthenticated is demo-only
-  Dev->>CR: curl.exe POST /load
+  Note over CR: Data plane is separate: /load or Eventarc /events
 ```
 
 **Image contents:** `Dockerfile` copies `requirements.txt`, `app.py`, and `src/` only. It does not bake in `data/` or `sql/`. The CSV must already exist in GCS; tables must already exist in BigQuery.
@@ -52,15 +61,22 @@ sequenceDiagram
 
 ## Data flow: GCS → Cloud Run → BigQuery
 
-A client sends `{ "bucket", "file" }` to `POST /load`, **or** Eventarc calls `POST /events` when an `incoming/*.csv` object is finalized. Both paths run the same pipeline: download, validate, transform, then four BigQuery surfaces: staging (append), final (`MERGE`), rejected (append), audit (streaming insert).
+Two equivalent entry points share `run_pipeline` in `app.py`:
+
+1. **Manual** — `POST /load` JSON `{ "bucket", "file" }` (classroom curl, replays).
+2. **Automated** — GCS **object finalized** → Eventarc → `POST /events` CloudEvent. The API keeps only `incoming/*.csv` (HTTP **204** otherwise). Files already in the folder are **not** listed or scanned.
+
+Both download the object, validate, transform, then write four BigQuery surfaces: staging (append), final (`MERGE`), rejected (append), audit (streaming insert).
+
+**Trigger location must equal bucket location.** A **US multi-region** bucket (this project's landing zone) uses Eventarc location **`us`**. Cloud Run can stay in `us-central1`. A `us-central1` Eventarc trigger will not see that bucket.
 
 ```mermaid
 flowchart TB
-  Client["Client curl.exe"] -->|POST /load JSON| API["Cloud Run Flask API"]
   Drop["Upload incoming/*.csv"] --> GCS
-  GCS -->|object finalized| EA["Eventarc"]
+  Client["curl POST /load"] -->|JSON bucket+file| API["Cloud Run Flask API"]
+  GCS["GCS bucket<br/>incoming/employee_travel_YYYYMMDD.csv"] -->|object finalized| EA["Eventarc<br/>location = bucket location"]
   EA -->|POST /events CloudEvent| API
-  GCS["GCS bucket<br/>incoming/employee_travel_YYYYMMDD.csv"] -->|download_as_bytes| API
+  GCS -->|download_as_bytes| API
   API -->|valid rows WRITE_APPEND| ST["travel_analytics.travel_staging"]
   API -->|MERGE on booking_id<br/>WHERE execution_id| FIN["travel_analytics.employee_travel"]
   ST --> FIN
@@ -72,24 +88,31 @@ flowchart TB
 
 ```mermaid
 sequenceDiagram
-  participant C as Client
-  participant API as Cloud Run
+  participant U as Uploader or curl
   participant GCS as Cloud Storage
+  participant EA as Eventarc
+  participant API as Cloud Run
   participant BQ as BigQuery
-  Note over C,API: Manual: POST /load. Automated: Eventarc POST /events.
-  C->>API: POST /load {bucket, file}
+  alt automated drop
+    U->>GCS: PUT incoming/*.csv
+    GCS->>EA: object finalized
+    EA->>API: POST /events CloudEvent
+  else manual
+    U->>API: POST /load {bucket, file}
+  end
+  API->>API: skip unless incoming/*.csv (events → 204)
   API->>API: execution_id = UUID
   API->>GCS: download object
   alt missing / forbidden / empty / bad schema
     API->>BQ: audit FAILED (if BQ client exists)
-    API-->>C: FAILED + HTTP 4xx/5xx
+    API-->>EA: FAILED + HTTP 4xx/5xx (Eventarc may retry 5xx)
   else records parsed
     API->>API: validate then transform
     API->>BQ: load staging
     API->>BQ: MERGE employee_travel
     API->>BQ: load rejected
     API->>BQ: audit SUCCESS
-    API-->>C: SUCCESS + counts
+    API-->>U: SUCCESS + counts (or 200 to Eventarc)
   end
 ```
 
@@ -99,18 +122,19 @@ sequenceDiagram
 
 | Component | Responsibility |
 | --- | --- |
-| **GCS** | Durable landing zone. Object path in the sample request is `incoming/employee_travel.csv`. |
+| **GCS** | Durable landing zone. Daily objects `incoming/employee_travel_YYYYMMDD.csv`. Eventarc does not list the prefix. |
+| **Eventarc** | GCS object-finalized → `POST /events`. One event per new or overwritten object. Location = bucket location (`us` for US multi-region). Path-pattern `name=incoming/*.csv` is **not** supported on this event type; the API filters. Delivery is **at-least-once** (duplicate audits possible; MERGE still unique on `booking_id`). |
+| **`src/gcs_event.py`** | Parse CloudEvent; keep `incoming/*.csv` only. Other objects → **204** (no audit, no retry). |
 | **`src/gcs_reader.py`** | `download_as_bytes`, parse with pandas (`dtype=str`, no NA filter). Maps `NotFound` → 404, `Forbidden` → 403, empty/parse errors → 422. |
 | **`src/validator.py`** | Requires 13 columns. Splits valid vs rejected with concatenated `rejection_reason` values. |
 | **`src/transformer.py`** | Trim; title-case name/cities; uppercase status/currency; `travel_duration_days`; lineage `processed_at`, `source_file`, `execution_id`. |
 | **`src/bigquery_loader.py`** | Staging load job, parameterized `MERGE`, rejected load job, parameterized audit `SELECT`. |
 | **`src/audit.py`** | One `AuditRecord` per execution via `insert_rows_json`. |
 | **`src/config.py`** | Frozen dataclass from env: `GCP_PROJECT_ID` / `GOOGLE_CLOUD_PROJECT`, dataset, location, table names, port, log level, audit limit. |
-| **`app.py`** | Health (no GCP), `/load` (manual JSON), `/events` (Eventarc CloudEvent), `/audit`, JSON error envelope. |
-| **Eventarc** | GCS object-finalized → `POST /events`. Does not list the bucket; one event per new/overwritten object. |
+| **`app.py`** | Health (no GCP), `/load` (manual JSON), `/events` (Eventarc CloudEvent), `/audit`, JSON error envelope. Shared `run_pipeline`. |
 | **BigQuery** | `travel_staging` (partition `DATE(processed_at)`, cluster `execution_id, booking_id`, 30-day partition expiry), `employee_travel` (partition `travel_date`, cluster `department, booking_status, booking_id`), `travel_rejected`, `pipeline_audit`. |
-| **Cloud Logging** | Receives stdout; each `/load` logger is bound to `execution_id`. |
-| **IAM** | Runtime SA: Storage Object Viewer, BigQuery Data Editor, BigQuery Job User. Eventarc SA: Eventarc Event Receiver + Cloud Run Invoker. GCS project SA: Pub/Sub Publisher. |
+| **Cloud Logging** | Receives stdout; each pipeline logger is bound to `execution_id`. |
+| **IAM** | Runtime SA: Storage Object Viewer, BigQuery Data Editor, BigQuery Job User. Eventarc SA: Eventarc Event Receiver, Cloud Run Invoker, Storage Legacy Bucket Reader on the landing bucket (`storage.buckets.get`). GCS project SA: Pub/Sub Publisher. Eventarc service agent: `roles/eventarc.serviceAgent`. |
 
 ---
 
@@ -142,8 +166,8 @@ Idempotency is **at the booking grain**, not “exactly-once HTTP”.
 - `MERGE` uses only `WHERE execution_id = @execution_id`, so a replay does not re-merge older staging batches.
 - `ON T.booking_id = S.booking_id` updates all non-key columns including lineage.
 - `ROW_NUMBER() OVER (PARTITION BY booking_id ORDER BY processed_at DESC)` makes the USING clause unique on `booking_id` (BigQuery `MERGE` requires a unique key in source).
-- HTTP retries therefore converge the **final** table to the latest valid payload per `booking_id`.
-- Rejected and audit tables are **not** idempotent; they are an operational history. Replays add rows there on purpose.
+- HTTP retries and Eventarc **at-least-once** delivery converge the **final** table to the latest valid payload per `booking_id`.
+- Rejected and audit tables are **not** idempotent; they are an operational history. Replays and duplicate events add rows there on purpose.
 
 The standalone script `sql/merge_employee_travel.sql` is the same MERGE pattern for explanation or a manual rerun with `--parameter=execution_id:STRING:<UUID>`.
 
@@ -153,7 +177,8 @@ The standalone script `sql/merge_employee_travel.sql` is the same MERGE pattern 
 
 | Failure | HTTP | Audit |
 | --- | --- | --- |
-| Invalid JSON / missing bucket or file / non-CSV | 400 | Best-effort FAILED audit after initializing the BigQuery client |
+| Eventarc event not `incoming/*.csv` | **204** | None (ignored) |
+| Invalid JSON / missing bucket or file / non-CSV (`/load`) | 400 | Best-effort FAILED audit after initializing the BigQuery client |
 | GCS not found | 404 | FAILED (client exists) |
 | GCS / BQ permission | 403 | FAILED when BQ is available |
 | Empty or unparsable CSV, missing columns | 422 | FAILED |
@@ -174,8 +199,9 @@ Partial BigQuery work: staging load can succeed and MERGE fail; the FAILED audit
 - Config from environment, not checked-in secrets.
 - No SA key in Git, Docker context (`.dockerignore` excludes `.env`), or Cloud Run env.
 - Least-privilege **data-plane** roles on the runtime SA (read objects, edit table data, run jobs).
+- Separate **invoke-plane** SA for Eventarc (no BigQuery). Grant Cloud Run Invoker to that SA rather than relying only on `allUsers`.
 - Parameterized BigQuery queries (`execution_id`, `limit`) rather than concatenating client strings into SQL for those filters.
-- Request body allow-list: JSON object, required keys, CSV suffix only.
+- Request body allow-list on `/load`; CloudEvent filter on `/events` (`incoming/*.csv` only).
 
 **What you should change before production**
 
