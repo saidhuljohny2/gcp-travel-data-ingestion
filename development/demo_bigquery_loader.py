@@ -1,9 +1,7 @@
-"""Classroom demo: load transformed rows into BigQuery (same steps as POST /load).
+"""Classroom demo: BigQuery load steps (staging / MERGE / rejected).
 
-Writes to travel_staging, employee_travel (MERGE), travel_rejected, pipeline_audit.
-
-Run from the repo root (ADC user needs BigQuery Data Editor + Job User):
-    python development/demo_bigquery_loader.py
+For the full chain as Cloud Run uses it, prefer:
+    python development/demo_run_pipeline.py
 """
 
 from pathlib import Path

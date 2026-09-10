@@ -179,6 +179,7 @@ gcp-travel-data-ingestion/
 └── src/
     ├── __init__.py
     ├── config.py               # Env-only config (GCP_PROJECT_ID, BQ_DATASET, …)
+    ├── pipeline.py             # run_pipeline: used by /load, /events, demo_run_pipeline
     ├── gcs_reader.py
     ├── gcs_event.py            # Eventarc CloudEvent → incoming/*.csv
     ├── validator.py

@@ -131,7 +131,8 @@ sequenceDiagram
 | **`src/bigquery_loader.py`** | Staging load job, parameterized `MERGE`, rejected load job, parameterized audit `SELECT`. |
 | **`src/audit.py`** | One `AuditRecord` per execution via `insert_rows_json`. |
 | **`src/config.py`** | Frozen dataclass from env: `GCP_PROJECT_ID` / `GOOGLE_CLOUD_PROJECT`, dataset, location, table names, port, log level, audit limit. |
-| **`app.py`** | Health (no GCP), `/load` (manual JSON), `/events` (Eventarc CloudEvent), `/audit`, JSON error envelope. Shared `run_pipeline`. |
+| **`src/pipeline.py`** | `run_pipeline`: the module chain. Called by `/load`, `/events`, and `development/demo_run_pipeline.py`. |
+| **`app.py`** | Health (no GCP), `/load`, `/events`, `/audit`. HTTP envelope only. |
 | **BigQuery** | `travel_staging` (partition `DATE(processed_at)`, cluster `execution_id, booking_id`, 30-day partition expiry), `employee_travel` (partition `travel_date`, cluster `department, booking_status, booking_id`), `travel_rejected`, `pipeline_audit`. |
 | **Cloud Logging** | Receives stdout; each pipeline logger is bound to `execution_id`. |
 | **IAM** | Runtime SA: Storage Object Viewer, BigQuery Data Editor, BigQuery Job User. Eventarc SA: Eventarc Event Receiver, Cloud Run Invoker, Storage Legacy Bucket Reader on the landing bucket (`storage.buckets.get`). GCS project SA: Pub/Sub Publisher. Eventarc service agent: `roles/eventarc.serviceAgent`. |

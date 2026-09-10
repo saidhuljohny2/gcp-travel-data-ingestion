@@ -84,11 +84,13 @@ gcp-travel-data-ingestion/
 
 | File | Role | Talks to |
 | --- | --- | --- |
-| `app.py` | Flask factory: `GET /`, `GET /audit`, `POST /load`, `POST /events`. Creates `execution_id` (UUID). Maps errors to HTTP 400/403/404/422/500. | All of `src/`, GCS + BigQuery clients |
-| `src/config.py` | Reads **environment only**: `GCP_PROJECT_ID`, `BQ_DATASET`, `BQ_LOCATION`, `PORT`, `LOG_LEVEL`. Builds table IDs `project.travel_analytics.employee_travel`. | `app.py`, loader, audit |
-| `src/logger.py` | Stdout logging with `execution_id=` on every line (Cloud Logging). | `app.py` |
-| `src/utils.py` | `PipelineError` + HTTP status, UTC timestamps, JSON-safe pandas values. | validator, gcs_reader, app |
+| `app.py` | Flask factory: `GET /`, `GET /audit`, `POST /load`, `POST /events`. HTTP only; calls `src.pipeline.run_pipeline`. | Flask, `src.pipeline`, `src.gcs_event` |
+| `src/pipeline.py` | `run_pipeline`: read → validate → transform → staging / MERGE / rejected → audit. Used by `/load`, `/events`, and `demo_run_pipeline.py`. | All other `src/` data modules |
+| `src/config.py` | Reads **environment only**: `GCP_PROJECT_ID`, `BQ_DATASET`, `BQ_LOCATION`, `PORT`, `LOG_LEVEL`. Builds table IDs `project.travel_analytics.employee_travel`. | `app.py`, loader, audit, pipeline |
+| `src/logger.py` | Stdout logging with `execution_id=` on every line (Cloud Logging). | `app.py`, pipeline |
+| `src/utils.py` | `PipelineError` + HTTP status, UTC timestamps, JSON-safe pandas values. | validator, gcs_reader, pipeline, app |
 | `src/gcs_event.py` | Parse Eventarc CloudEvents; keep only `incoming/*.csv`. | `POST /events` |
+| `src/gcs_reader.py` | `blob.download_as_bytes()` → pandas CSV as **all strings**. Maps NotFound → 404, Forbidden → 403, empty/parse → 422. | Cloud Storage |
 | `src/validator.py` | Required columns + seven quality rules. Splits **valid** vs **rejected** (`rejection_reason`). In-file duplicate `booking_id`: keep first. | pandas only |
 | `src/transformer.py` | Trim; title-case names/cities; uppercase status/currency; `travel_duration_days`; lineage `processed_at`, `source_file`, `execution_id`. Rejected dates/prices stay strings. | pandas only |
 | `src/bigquery_loader.py` | Append staging → `MERGE` final on `booking_id` → append rejected. `GET /audit` query. | BigQuery |
@@ -99,14 +101,15 @@ Import graph (simplified):
 
 ```text
 app.py
-  ├── config.py
-  ├── logger.py
+  ├── pipeline.py
+  │     ├── gcs_reader.py ──► utils.py
+  │     ├── validator.py  ──► utils.py
+  │     ├── transformer.py
+  │     ├── bigquery_loader.py ──► config.py, utils.py
+  │     └── audit.py ──► config.py, utils.py
   ├── gcs_event.py
-  ├── gcs_reader.py ──► utils.py
-  ├── validator.py  ──► utils.py
-  ├── transformer.py
-  ├── bigquery_loader.py ──► config.py, utils.py
-  └── audit.py ──► config.py, utils.py
+  ├── config.py
+  └── logger.py
 ```
 
 ### HTTP contract
@@ -300,11 +303,11 @@ CI/CD (`cloudbuild.yaml`) is those same three steps (build, push, deploy) run by
 
 ## What to open first (teaching order)
 
-1. `app.py` — `POST /load` (manual) and `POST /events` (Eventarc) share `run_pipeline`.  
-2. `src/gcs_event.py` — why only `incoming/*.csv` is accepted from GCS events.  
-3. `src/validator.py` + `src/transformer.py` — reject vs clean.  
-4. `src/bigquery_loader.py` + `sql/merge_employee_travel.sql` — same MERGE, two places.  
-5. `sql/create_tables.sql` — why four tables exist.  
+1. `src/gcs_reader.py` / `validator.py` / `transformer.py` — one job each (`development/demo_*`).  
+2. `src/pipeline.py` + `development/demo_run_pipeline.py` — glue (`run_pipeline`).  
+3. `app.py` — HTTP `/load` and `/events` call that same function.  
+4. `src/gcs_event.py` — which uploads become a load.  
+5. `src/bigquery_loader.py` + `sql/merge_employee_travel.sql` — MERGE.  
 6. `Dockerfile` + `cloudbuild.yaml` — how that Python becomes Cloud Run.
 
 ---

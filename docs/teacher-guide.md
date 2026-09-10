@@ -188,6 +188,7 @@ Teach this **after** you have walked `src/` and run the `development/` scripts. 
 | `python development/demo_bigquery_loader.py` | `src/bigquery_loader.py` | Staging → MERGE → rejected |
 | `python development/demo_audit.py` | `src/audit.py` | Read `pipeline_audit` |
 | `python development/demo_gcs_event.py` | `src/gcs_event.py` | Which CloudEvents become a load |
+| `python development/demo_run_pipeline.py` | `src/pipeline.py` | **Glue:** all of the above, one function (writes BigQuery) |
 
 **Point at.** Same `from src.… import …` the Cloud Run container will use. Demos are **not** a second pipeline.
 
@@ -208,11 +209,19 @@ read_csv_from_gcs
 
 **Say.** The next step is **not** Spark and **not** Eventarc yet. It is: **the same chain, one function, one request.**
 
-**Point at.** `app.py` → `run_pipeline(bucket, file_name)`. That is the demo sequence glued together.
+**Point at.** `src/pipeline.py` → `run_pipeline(bucket, file_name)`. That is the demo sequence glued together. Cloud Run does not reimplement it.
+
+```bash
+python development/demo_run_pipeline.py
+python development/demo_run_pipeline.py --file incoming/employee_travel_20260908.csv
+```
+
+**Say.** You still typed `--file`. That is the same picker as JSON `file` on `/load`.
 
 | Who calls `run_pipeline` | How | Lesson |
 | --- | --- | --- |
-| You on the laptop | `development/demo_*.py` in order | 1b (done) |
+| You on the laptop | `development/demo_*.py` one module at a time | 1b |
+| You on the laptop | `development/demo_run_pipeline.py` | 1b (glue) |
 | You / curl / `demo_api.py` | `POST /load` `{bucket, file}` | 8 |
 | Eventarc | `POST /events` CloudEvent | 13f |
 | Cloud Build | does **not** call it | 13 |
@@ -227,7 +236,7 @@ python development/demo_api.py --load
 
 **Say.** `demo_api.py` is the last “human orchestrator.” HTTP replaced `sys.path` + five Python files. GCS and BigQuery did not change.
 
-**Check.** Same 286 / 14 you got from `demo_bigquery_loader.py` (or `/load` curl).
+**Check.** Same 286 / 14 you got from `demo_run_pipeline.py` (or `/load` curl).
 
 ### Connect next: automate the *caller* (Eventarc)
 
@@ -262,7 +271,8 @@ GCS upload  incoming/employee_travel_20260910.csv
 ### Script for the room (30 seconds)
 
 > We proved each `src` module with a `development` demo.  
-> Cloud Run is those demos in one HTTP function.  
+> `demo_run_pipeline.py` is those demos in one function (`src.pipeline.run_pipeline`).  
+> Cloud Run HTTP (`/load`, `/events`) calls that same function.  
 > `/load` is still us choosing the file.  
 > Eventarc is GCS choosing the file.  
 > Cloud Build is how we ship a new function, not how we ingest a file.
