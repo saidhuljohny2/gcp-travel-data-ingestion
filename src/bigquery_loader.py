@@ -2,11 +2,9 @@
 
 import logging
 from typing import Any
-
 from google.api_core.exceptions import Forbidden, NotFound
 from google.cloud import bigquery
 import pandas as pd
-
 from src.config import Config
 from src.utils import PipelineError
 
@@ -62,9 +60,7 @@ REJECTED_SCHEMA = [
 class BigQueryLoader:
     """Encapsulate all BigQuery interactions used by the pipeline."""
 
-    def __init__(
-        self, client: bigquery.Client, config: Config, logger: logging.Logger
-    ) -> None:
+    def __init__(self, client: bigquery.Client, config: Config, logger: logging.Logger) -> None:
         self.client = client
         self.config = config
         self.logger = logger
@@ -75,12 +71,11 @@ class BigQueryLoader:
         except Forbidden as exc:
             raise PipelineError("BigQuery permission denied", 403) from exc
         except NotFound as exc:
-            raise PipelineError(
-                "BigQuery dataset or table not found; run the SQL setup scripts", 500
-            ) from exc
+            raise PipelineError("BigQuery dataset or table not found; run the SQL setup scripts", 500) from exc
 
     def load_staging(self, frame: pd.DataFrame) -> None:
         """Append validated records to staging for the current execution."""
+
         if frame.empty:
             return
         self.logger.info("BigQuery staging load started")
@@ -88,15 +83,12 @@ class BigQueryLoader:
             schema=STAGING_SCHEMA,
             write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
         )
-        self._run(
-            lambda: self.client.load_table_from_dataframe(
-                frame, self.config.table_id(self.config.staging_table), job_config=config
-            ).result()
-        )
+        self._run(lambda: self.client.load_table_from_dataframe(frame, self.config.table_id(self.config.staging_table), job_config=config).result())
         self.logger.info("BigQuery staging load completed")
 
     def merge_final(self, execution_id: str) -> None:
         """Upsert one execution from staging, making replay idempotent by booking_id."""
+
         target = self.config.table_id(self.config.final_table)
         staging = self.config.table_id(self.config.staging_table)
         update_columns = [name for name in FINAL_COLUMNS if name != "booking_id"]
@@ -132,19 +124,14 @@ class BigQueryLoader:
 
     def load_rejected(self, frame: pd.DataFrame) -> None:
         """Append invalid records and their reasons to the rejected table."""
+
         if frame.empty:
             return
         config = bigquery.LoadJobConfig(
             schema=REJECTED_SCHEMA,
             write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
         )
-        self._run(
-            lambda: self.client.load_table_from_dataframe(
-                frame,
-                self.config.table_id(self.config.rejected_table),
-                job_config=config,
-            ).result()
-        )
+        self._run(lambda: self.client.load_table_from_dataframe(frame,self.config.table_id(self.config.rejected_table),job_config=config,).result())
         self.logger.warning("Loaded %d rejected records", len(frame))
 
     def latest_audits(self, limit: int) -> list[dict[str, Any]]:
@@ -158,7 +145,5 @@ class BigQueryLoader:
         job_config = bigquery.QueryJobConfig(
             query_parameters=[bigquery.ScalarQueryParameter("limit", "INT64", limit)]
         )
-        rows = self._run(
-            lambda: self.client.query(query, job_config=job_config).result()
-        )
+        rows = self._run(lambda: self.client.query(query, job_config=job_config).result())
         return [dict(row.items()) for row in rows]

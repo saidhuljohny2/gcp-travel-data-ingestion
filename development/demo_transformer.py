@@ -13,17 +13,15 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from google.cloud import storage
-
 from src.gcs_reader import read_csv_from_gcs
 from src.transformer import transform_rejected_records, transform_valid_records
 from src.utils import utc_now
 from src.validator import validate_records
 
-BUCKET = "travel-incoming-gcp-evening-batch-501811"
+BUCKET = "travel_landing_bkt"
 FILE = "incoming/employee_travel_20260907.csv"
 
 COMPARE_COLS = ["employee_name", "origin_city", "destination_city", "booking_status", "currency"]
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")

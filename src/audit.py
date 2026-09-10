@@ -4,10 +4,8 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 import logging
 from typing import Any
-
 from google.api_core.exceptions import Forbidden, NotFound
 from google.cloud import bigquery
-
 from src.config import Config
 from src.utils import PipelineError
 
@@ -29,23 +27,18 @@ class AuditRecord:
 
     def as_json(self) -> dict[str, Any]:
         """Convert timestamps to RFC 3339 values for BigQuery streaming insert."""
+        
         record = asdict(self)
         record["start_time"] = self.start_time.isoformat()
         record["end_time"] = self.end_time.isoformat()
         return record
 
 
-def write_audit(
-    client: bigquery.Client,
-    config: Config,
-    record: AuditRecord,
-    logger: logging.Logger,
-) -> None:
+def write_audit(client: bigquery.Client, config: Config, record: AuditRecord, logger: logging.Logger) -> None:
     """Insert one audit record; raise a clear error when persistence fails."""
+
     try:
-        errors = client.insert_rows_json(
-            config.table_id(config.audit_table), [record.as_json()]
-        )
+        errors = client.insert_rows_json(config.table_id(config.audit_table), [record.as_json()])
     except Forbidden as exc:
         raise PipelineError("BigQuery permission denied while writing audit", 403) from exc
     except NotFound as exc:

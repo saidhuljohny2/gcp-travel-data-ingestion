@@ -12,11 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from google.cloud import storage
-
 from src.gcs_reader import read_csv_from_gcs
 from src.validator import validate_records
 
-BUCKET = "travel-incoming-gcp-evening-batch-501811"
+BUCKET = "travel_landing_bkt"
 FILE = "incoming/employee_travel_20260907.csv"
 
 if __name__ == "__main__":

@@ -14,11 +14,10 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-os.environ.setdefault("GCP_PROJECT_ID", "gcp-evening-batch-501811")
-os.environ.setdefault("GOOGLE_CLOUD_PROJECT", "gcp-evening-batch-501811")
+os.environ.setdefault("GCP_PROJECT_ID", "morning-batch-gcp-501901")
+os.environ.setdefault("GOOGLE_CLOUD_PROJECT", "morning-batch-gcp-501901")
 
 from google.cloud import bigquery
-
 from src.bigquery_loader import BigQueryLoader
 from src.config import Config
 from src.utils import json_safe

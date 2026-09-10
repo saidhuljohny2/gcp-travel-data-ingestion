@@ -16,8 +16,8 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-os.environ.setdefault("GCP_PROJECT_ID", "gcp-evening-batch-501811")
-os.environ.setdefault("GOOGLE_CLOUD_PROJECT", "gcp-evening-batch-501811")
+os.environ.setdefault("GCP_PROJECT_ID", "morning-batch-gcp-501901")
+os.environ.setdefault("GOOGLE_CLOUD_PROJECT", "morning-batch-gcp-501901")
 
 from google.cloud import bigquery, storage
 
@@ -29,7 +29,7 @@ from src.transformer import transform_rejected_records, transform_valid_records
 from src.utils import utc_now
 from src.validator import validate_records
 
-BUCKET = "travel-incoming-gcp-evening-batch-501811"
+BUCKET = "travel_landing_bkt"
 FILE = "incoming/employee_travel_20260907.csv"
 
 

@@ -1,7 +1,6 @@
 """Data quality rules for employee travel records."""
 
 import logging
-
 import pandas as pd
 
 REQUIRED_COLUMNS = [
@@ -27,10 +26,9 @@ def _blank(series: pd.Series) -> pd.Series:
     return series.isna() | series.astype(str).str.strip().eq("")
 
 
-def validate_records(
-    frame: pd.DataFrame, logger: logging.Logger
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+def validate_records(frame: pd.DataFrame, logger: logging.Logger) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Split records into valid and rejected frames with rejection reasons."""
+    
     logger.info("Validation started for %d records", len(frame))
     missing = [column for column in REQUIRED_COLUMNS if column not in frame.columns]
     if missing:
@@ -49,20 +47,13 @@ def validate_records(
             reasons[position].append(reason)
 
     reject(_blank(working["booking_id"]), "booking_id is missing")
-    reject(
-        working["booking_id"].str.strip().duplicated(keep="first")
-        & ~_blank(working["booking_id"]),
-        "duplicate booking_id in source file",
-    )
+    reject(working["booking_id"].str.strip().duplicated(keep="first") & ~_blank(working["booking_id"]),"duplicate booking_id in source file",)
     reject(_blank(working["employee_id"]), "employee_id is missing")
     reject(_blank(working["employee_name"]), "employee_name is missing")
     reject(prices.isna() | prices.le(0), "ticket_price must be greater than zero")
     reject(travel_dates.isna(), "travel_date is invalid")
     reject(return_dates.isna(), "return_date is invalid")
-    reject(
-        travel_dates.notna() & return_dates.notna() & return_dates.lt(travel_dates),
-        "return_date is earlier than travel_date",
-    )
+    reject(travel_dates.notna() & return_dates.notna() & return_dates.lt(travel_dates),"return_date is earlier than travel_date",)
     reject(~statuses.isin(VALID_STATUSES), "booking_status is invalid")
 
     working["rejection_reason"] = ["; ".join(items) for items in reasons]
@@ -74,7 +65,5 @@ def validate_records(
     valid["return_date"] = return_dates.loc[valid.index]
     # float64 is required for load_table_from_dataframe; BigQuery maps it to NUMERIC.
     valid["ticket_price"] = prices.loc[valid.index].astype("float64")
-    logger.info(
-        "Validation completed: valid=%d rejected=%d", len(valid), len(rejected)
-    )
+    logger.info("Validation completed: valid=%d rejected=%d", len(valid), len(rejected))
     return valid, rejected

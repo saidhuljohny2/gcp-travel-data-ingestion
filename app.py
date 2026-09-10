@@ -21,38 +21,27 @@ from src.utils import EXPECTED_ERRORS, PipelineError, http_status, json_safe, ut
 from src.validator import validate_records
 
 
-def create_app(
-    config: Config | None = None,
-    storage_client: storage.Client | None = None,
-    bigquery_client: bigquery.Client | None = None,
-) -> Flask:
+def create_app(config: Config | None = None, storage_client: storage.Client | None = None, bigquery_client: bigquery.Client | None = None) -> Flask:
     """Application factory supporting dependency injection for tests."""
+
     app = Flask(__name__)
     settings = config or Config.from_env()
     logger = configure_logging(settings.log_level)
     logger.info("API started")
 
     def clients() -> tuple[storage.Client, bigquery.Client, Config]:
-        bq = bigquery_client or bigquery.Client(
-            project=settings.project_id or None, location=settings.bq_location
-        )
+        bq = bigquery_client or bigquery.Client(project=settings.project_id or None, location=settings.bq_location)
         gcs = storage_client or storage.Client(project=settings.project_id or bq.project)
         resolved = settings
         if not settings.project_id:
             resolved = replace(settings, project_id=bq.project)
         return gcs, bq, resolved
 
-    def run_pipeline(
-        bucket: str,
-        file_name: str,
-        *,
-        invalid_request: str | None = None,
-    ) -> tuple[Any, int]:
-        """Validate one CSV from GCS into BigQuery and always try to audit."""
+    def run_pipeline(bucket: str, file_name: str, *, invalid_request: str | None = None) -> tuple[Any, int]:
+        """Validate each CSV from GCS into BigQuery and always try to audit."""
+
         execution_id = str(uuid4())
-        execution_logger = with_execution_id(
-            logging.getLogger("travel_ingestion"), execution_id
-        )
+        execution_logger = with_execution_id(logging.getLogger("travel_ingestion"), execution_id)
         start_time = utc_now()
         started = time.monotonic()
         records_read = records_loaded = records_rejected = 0
@@ -74,12 +63,8 @@ def create_app(
             records_read = len(source)
             valid, rejected = validate_records(source, execution_logger)
             processed_at = utc_now()
-            clean = transform_valid_records(
-                valid, file_name, execution_id, processed_at, execution_logger
-            )
-            rejected = transform_rejected_records(
-                rejected, file_name, execution_id, processed_at
-            )
+            clean = transform_valid_records(valid, file_name, execution_id, processed_at, execution_logger)
+            rejected = transform_rejected_records(rejected, file_name, execution_id, processed_at)
             records_loaded = len(clean)
             records_rejected = len(rejected)
 

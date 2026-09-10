@@ -8,12 +8,7 @@ from google.cloud import storage
 import pandas as pd
 
 
-def read_csv_from_gcs(
-    bucket_name: str,
-    object_name: str,
-    client: storage.Client,
-    logger: logging.Logger,
-) -> pd.DataFrame:
+def read_csv_from_gcs(bucket_name: str, object_name: str, client: storage.Client, logger: logging.Logger) -> pd.DataFrame:
     """Download and parse a GCS object as a string-preserving DataFrame."""
     logger.info("File received: gs://%s/%s", bucket_name, object_name)
     try:
