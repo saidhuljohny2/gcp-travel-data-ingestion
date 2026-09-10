@@ -6,7 +6,7 @@
 # Trigger builds should set _IMAGE_TAG=$SHORT_SHA (see docs/ci-cd.md).
 substitutions:
   _REGION: us-central1
-  _REPOSITORY: travel-platform
+  _REPOSITORY: cloud-run-source-deploy
   _SERVICE: travel-ingestion-api
   _RUNTIME_SA_ID: travel-ingestion-sa
   _BQ_DATASET: travel_analytics
