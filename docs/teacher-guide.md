@@ -91,6 +91,7 @@ Cloud Build container builds take **3–8 minutes**. Pre-warm so class does not 
 | --- | --- | --- | --- |
 | 0 | Pick project, enable APIs | APIs & Services | 10 min |
 | 1 | Business + architecture | slides / whiteboard | 20 min |
+| 1b | `src/` + `development/` demos → then automation | laptop / Cloud Shell | 25 min |
 | 2 | Bucket + timestamped daily CSVs | Cloud Storage | 15 min |
 | 3 | Dirty data walkthrough | Cloud Storage | 15 min |
 | 4 | Dataset + 4 tables | BigQuery Studio | 25 min |
@@ -168,6 +169,105 @@ Data:    GCS incoming/*.csv → (Eventarc) → Cloud Run /events → BigQuery
 
 **Ask.** Why not overwrite one file named `employee_travel.csv` every day?  
 *Answer: You lose history. Dated names + `pipeline_audit.file_name` prove which day loaded.*
+
+---
+
+## Lesson 1b — From `src/` demos to automation (the handoff)
+
+Teach this **after** you have walked `src/` and run the `development/` scripts. Do **not** jump from pandas demos straight to Eventarc. The students must see that **nothing in `src/` changed** — only **who calls it**.
+
+### What they just saw (you were the orchestrator)
+
+**Say.** `src/` is the factory. Each module does one job. `development/` is you pressing the buttons **in order**, with ADC on the laptop.
+
+| Demo (from repo root) | Production module | Proves |
+| --- | --- | --- |
+| `python development/demo_gcs_reader.py` | `src/gcs_reader.py` | Download + parse one GCS CSV |
+| `python development/demo_validator.py` | `src/validator.py` | Split valid vs rejected |
+| `python development/demo_transformer.py` | `src/transformer.py` | Clean + lineage |
+| `python development/demo_bigquery_loader.py` | `src/bigquery_loader.py` | Staging → MERGE → rejected |
+| `python development/demo_audit.py` | `src/audit.py` | Read `pipeline_audit` |
+| `python development/demo_gcs_event.py` | `src/gcs_event.py` | Which CloudEvents become a load |
+
+**Point at.** Same `from src.… import …` the Cloud Run container will use. Demos are **not** a second pipeline.
+
+**Ask.** If I run only `demo_gcs_reader.py`, did BigQuery change?  
+*Answer: No. You called one module. Production calls them all, in this order, once.*
+
+Whiteboard the chain:
+
+```text
+read_csv_from_gcs
+  → validate_records
+    → transform_valid / transform_rejected
+      → load_staging → merge_final → load_rejected
+        → write_audit
+```
+
+### Connect next: wrap the chain in HTTP (`app.py`)
+
+**Say.** The next step is **not** Spark and **not** Eventarc yet. It is: **the same chain, one function, one request.**
+
+**Point at.** `app.py` → `run_pipeline(bucket, file_name)`. That is the demo sequence glued together.
+
+| Who calls `run_pipeline` | How | Lesson |
+| --- | --- | --- |
+| You on the laptop | `development/demo_*.py` in order | 1b (done) |
+| You / curl / `demo_api.py` | `POST /load` `{bucket, file}` | 8 |
+| Eventarc | `POST /events` CloudEvent | 13f |
+| Cloud Build | does **not** call it | 13 |
+
+**Do.** After Cloud Run is up (Lesson 6–7):
+
+```bash
+python development/demo_api.py
+# then, writes BigQuery:
+python development/demo_api.py --load
+```
+
+**Say.** `demo_api.py` is the last “human orchestrator.” HTTP replaced `sys.path` + five Python files. GCS and BigQuery did not change.
+
+**Check.** Same 286 / 14 you got from `demo_bigquery_loader.py` (or `/load` curl).
+
+### Connect next: automate the *caller* (Eventarc)
+
+**Say.** Students will ask: “If there are three CSVs in `incoming/`, who picks the file?” After the demos, the honest answer is: **nobody — you passed `FILE = …` in the script.** `/load` is the same: the JSON `file` field is the picker.
+
+Automation means **stop passing the filename yourself.**
+
+```text
+You typed FILE= incoming/employee_travel_20260907.csv     ← demo
+You POSTed  {"file": "incoming/…07.csv"}                  ← /load
+GCS upload  incoming/employee_travel_20260910.csv
+       → Eventarc puts that object name on POST /events   ← automation
+```
+
+**Point at.** `src/gcs_event.py` (already demo’d). Eventarc is only a **telephone**. `/events` unwraps the CloudEvent, then calls the **same** `run_pipeline`.
+
+**Do (live, Lesson 13f).** Upload `_20260910.csv`. Do not curl. Logs: `Eventarc object finalized` then `File received`.
+
+**Ask.** Did we rewrite validator or MERGE for Eventarc?  
+*Answer: No. We added a caller. `src/validator.py` is unchanged.*
+
+### Separate automation: shipping the wrapper (CI/CD)
+
+**Say.** Two sentences, two automations — write them on the board:
+
+1. **Data automation** = new CSV → Eventarc → `/events` → `src/`  
+2. **Deploy automation** = `git push` → Cloud Build → new Cloud Run revision (**empty until a load is triggered**)
+
+**Ask.** If I push a bugfix to `validator.py` but nobody uploads a CSV, does `employee_travel` change?  
+*Answer: No. CI/CD only replaces the container. Data moves when `/load` or `/events` runs.*
+
+### Script for the room (30 seconds)
+
+> We proved each `src` module with a `development` demo.  
+> Cloud Run is those demos in one HTTP function.  
+> `/load` is still us choosing the file.  
+> Eventarc is GCS choosing the file.  
+> Cloud Build is how we ship a new function, not how we ingest a file.
+
+Then continue Console lessons (bucket → tables → SA → deploy) **or** jump to Lesson 8 if Cloud Run is already up, then 13f.
 
 ---
 
